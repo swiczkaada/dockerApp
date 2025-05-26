@@ -7,4 +7,4 @@ def index(request):
     """
     Render the index page.
     """
-    return render (request, 'store/index.html')
+    return render (request, 'index.html')

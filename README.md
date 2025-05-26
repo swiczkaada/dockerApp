@@ -54,7 +54,9 @@ python manage.py migrate
 ```
 
 Creer un super utilisateur
-```bash
 
+```bash
+ python manage.py createsuperuser
+```
 
 https://www.youtube.com/watch?v=odIR-00ggVI

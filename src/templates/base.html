@@ -5,7 +5,7 @@
     <title>La boutique </title>
 </head>
 <body>
-<a href="{% url 'store-index' %}">
+<a href="{% url 'index' %}">
         <h1>La boutique de Adam</h1>
 </a>
 {% if  user.is_authenticated %}
@@ -16,13 +16,10 @@
     <a href="{% url 'signup'%}">S'inscrire</a>
 {% endif %}
 
-{% if user.cart %}
-    <a href="{% url 'cart' %}">Mon panier ({{ user.cart.orders.count }})</a>
+{% if user.username %}
+    <a href="{% url 'profile' %}">Mon compte</a>
 {% endif %}
 
-
-{% block extra_head %}
-{% endblock %}
 {% block content %}
 {% endblock %}
 </body>

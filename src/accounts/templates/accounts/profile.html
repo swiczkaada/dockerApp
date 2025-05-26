@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Votre compte</h1>
+    <p>Bienvenue, {{ user.username }} !</p>
+    <p>Votre adresse e-mail : {{ user.email }}</p>
+    <p>Votre date d'inscription : {{ user.date_joined|date:"d M Y" }}</p>
+    <p>Votre dernier accès : {{ user.last_login|date:"d M Y H:i" }}</p>
+
+     <a href="{% url 'qr_code' %}">Acceder à mes qr codes</a>
+
+{% endblock %}

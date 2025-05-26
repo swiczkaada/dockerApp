@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Mes QR codes </h1>
+
+    <h2>Generer un qr code</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <p>
+            <label for="title">Titre</label>
+            <input type="text" name="title" id="title" required>
+        </p>
+        <p>
+            <label for="target_url">URL de destination</label>
+            <input type="url" name="target_url" id="target_url" required>
+        </p>
+        <button type="submit">Générer le QR Code</button>
+
+    </form>
+
+    {% if qrcodes %}
+        <h2>Vos QR Codes</h2>
+        <ul>
+            {% for qrcode in qrcodes %}
+                <li>
+                    <strong>{{ qrcode.title }}</strong> - <a href="{{ qrcode.target_url }}">{{ qrcode.target_url }}</a>
+                        <a href="{{ qrcode.get_absolute_url }}">Voir le qrcode</a>
+                        <a href="{%  url 'delete-qrcode' qrcode.uuid %}">Supprimer le QR Code</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Aucun QR Code généré pour le moment.</p>
+    {% endif %}
+{% endblock %}
