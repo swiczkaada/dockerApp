@@ -1,0 +1,16 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Docker App</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Blog</h1>
+        <p>This is a simple Flask application running inside a Docker container.</p>
+        <p>Nous sommmes le  {{date|date:" d F Y H:i:s" }}</p>
+    </div>
+</body>
+</html>
