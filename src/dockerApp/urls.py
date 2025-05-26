@@ -19,15 +19,21 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.defaults import server_error
 from .views import index
-from store.views import index as store_index, product_detail
-
+from store.views import index as store_index, product_detail, add_to_cart, cart, delete_cart
+from accounts.views import signup, logout_user, login_user
 from  dockerApp import  settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('product/<str:slug>/', product_detail, name='product-detail'),
+    path('product/<str:slug>/add-to-cart/', add_to_cart, name='add-to-cart'),
     path('500/', server_error),
+    path('signup/', signup, name='signup'),
+    path('logout/', logout_user, name='logout'),
+    path('login/', login_user, name='login'),
 
-    #path('', index, name='index'),
+    path('cart/', cart, name='cart'),
+    path('cart/delete', delete_cart, name='delete-cart'),
+                  #path('', index, name='index'),
     path('blog/', include("blog.urls")),
     path('', store_index, name='store-index'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

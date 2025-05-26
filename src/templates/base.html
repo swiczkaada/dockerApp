@@ -8,7 +8,21 @@
 <a href="{% url 'store-index' %}">
         <h1>La boutique de Adam</h1>
 </a>
+{% if  user.is_authenticated %}
+    {{ user.username }}
+    <a href="{% url 'logout' %}">Se déconnecter</a>
+{% else %}
+    <a href="{% url 'login' %}">Se connecter</a>
+    <a href="{% url 'signup'%}">S'inscrire</a>
+{% endif %}
 
+{% if user.cart %}
+    <a href="{% url 'cart' %}">Mon panier ({{ user.cart.orders.count }})</a>
+{% endif %}
+
+
+{% block extra_head %}
+{% endblock %}
 {% block content %}
 {% endblock %}
 </body>
