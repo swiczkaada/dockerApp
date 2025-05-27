@@ -1,26 +1,30 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>La boutique </title>
+    <title>La boutique</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-<a href="{% url 'index' %}">
-        <h1>La boutique de Adam</h1>
-</a>
-{% if  user.is_authenticated %}
-    {{ user.username }}
-    <a href="{% url 'logout' %}">Se déconnecter</a>
-{% else %}
-    <a href="{% url 'login' %}">Se connecter</a>
-    <a href="{% url 'signup'%}">S'inscrire</a>
-{% endif %}
-
-{% if user.username %}
-    <a href="{% url 'profile' %}">Mon compte</a>
-{% endif %}
-
-{% block content %}
-{% endblock %}
+    <header>
+        <div class="container">
+            <a href="{% url 'index' %}" class="logo">La boutique de Adam</a>
+            <nav>
+                {% if user.is_authenticated %}
+                    <span class="user">Bonjour, {{ user.username }}</span>
+                    <a href="{% url 'profile' %}">Mon compte</a>
+                    <a href="{% url 'logout' %}" class="btn btn-logout">Se déconnecter</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn">Se connecter</a>
+                    <a href="{% url 'signup' %}" class="btn btn-primary">S'inscrire</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
 </body>
 </html>

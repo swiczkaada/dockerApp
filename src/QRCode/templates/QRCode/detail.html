@@ -3,6 +3,9 @@
 
 {% block content %}
     <h2>{{qrcode.title}}</h2>
+    {% if qrcode.qr_image %}
+        <img src="{{ qrcode.qr_image.url }}" alt="QR Code for {{ qrcode.title }}" style="width: 200px; height: auto;">
+    {% endif %}
     <a href="{%  url 'delete-qrcode' qrcode.uuid %}">Supprimer le QR Code</a>
     <h2>Modifier le qr code </h2>
     <form method="POST">

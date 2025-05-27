@@ -1,5 +1,8 @@
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
+import qrcode as qrcode_lib
+from django.core.files.base import ContentFile
+from io import BytesIO
 
 from QRCode.models import QRCode
 
@@ -16,7 +19,11 @@ from QRCode.models import QRCode
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
 '''
-
+def index(request):
+    """
+    View function for the home page of the site.
+    """
+    return render(request, 'QRCode/index.html')
 def qr_code(request):
 
     # Check if user use the form to generate a QR code
@@ -26,13 +33,25 @@ def qr_code(request):
 
         if url and title:
             print("Generating QR Code...")
-            qr_code = QRCode.objects.create(
+            qr_code_obj = QRCode.objects.create(
                 user=request.user,
                 title=title,
                 target_url=url,
                 is_active=True
             )
-            qr_code.save()
+
+            # Construire l'URL complète avec l'adresse IP
+            ip_address = '192.168.1.149:8000'  # Remplacez par l'adresse IP de votre serveur
+            qr_code_url = f'http://{ip_address}/access/{qr_code_obj.uuid}'
+
+            # Génération de l'image du QR Code
+            img = qrcode_lib.make(qr_code_url)
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+
+            # Sauvegarde dans ImageField
+            filename = f"{qr_code_obj.uuid}.png"
+            qr_code_obj.qr_image.save(filename, ContentFile(buffer.getvalue()), save=True)
         return redirect('qr_code')
 
     qrcodes = QRCode.objects.all()
@@ -51,6 +70,17 @@ def qr_code_detail(request, uuid):
             qrcode.target_url = url
             qrcode.title = title
             qrcode.updated_at = timezone.now()
+
+            ip_address = '192.168.1.149:8000'  # Remplacez par l'adresse IP de votre serveur
+            qr_code_url = f'http://{ip_address}/access/{qrcode.uuid}'
+
+            # Regénère l'image QR code
+            img = qrcode_lib.make(url)
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            filename = f"{qrcode.uuid}.png"
+            qrcode.qr_image.save(filename, ContentFile(buffer.getvalue()), save=True)
+
             qrcode.save()
             return redirect('qr_code_detail', uuid=qrcode.uuid)
 

@@ -1,14 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Docker App</title>
-</head>
-<body>
-    <div class="container">
-        <h1>Welcome to the Docker App</h1>
-        <p>This is a simple Flask application running inside a Docker container.</p>
-        <p>Nous sommmes le  {{date|date:" d F Y H:i:s" }}</p>
-    </div>
-</body>
-</html>
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <p>Bienvenue dans notre app !</p>
+
+{% endblock %}

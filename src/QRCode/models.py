@@ -22,3 +22,7 @@ class QRCode(models.Model):
 
     def get_absolute_url(self):
         return reverse("qr_code_detail", kwargs={"uuid": self.uuid})
+
+    @property
+    def scan_count(self):
+        return self.scans.count()

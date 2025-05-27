@@ -26,6 +26,10 @@
                     <strong>{{ qrcode.title }}</strong> - <a href="{{ qrcode.target_url }}">{{ qrcode.target_url }}</a>
                         <a href="{{ qrcode.get_absolute_url }}">Voir le qrcode</a>
                         <a href="{%  url 'delete-qrcode' qrcode.uuid %}">Supprimer le QR Code</a>
+                        <p>Nombre de scans :
+                            {{ qrcode.scan_count }}
+                        </p>
+
                 </li>
             {% endfor %}
         </ul>

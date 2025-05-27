@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <p>Bienvenue dans notre app !</p>
+    <h1>Statistiques globales</h1>
+    <ul>
+        <li>Total des scans : {{ total_scans }}</li>
+        <li>Total des QR codes : {{ total_qrcodes }}</li>
+        <li>Scans par jour :</li>
+        <ul>
+            {% for day, count in scans_by_day.items %}
+                <li>{{ day }} : {{ count }}</li>
+            {% endfor %}
+        </ul>
+    </ul>
+{% endblock %}

@@ -59,4 +59,21 @@ Creer un super utilisateur
  python manage.py createsuperuser
 ```
 
+Installer la bibliotheque pour qrcode
+```bash
+pip install qrcode[pil]
+```
+
+
+Installer la bilbiotheque pour crypter les adresses ip :
+```bash
+pip install cryptography
+```
+
+Installer Django REST Framework (DRF) (pour exporter les donnes)
+```bash
+pip install djangorestframework
+```
+
 https://www.youtube.com/watch?v=odIR-00ggVI
+$ python manage.py runserver 192.168.1.149:8000

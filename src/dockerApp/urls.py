@@ -20,11 +20,12 @@ from django.urls import path, include
 from django.views.defaults import server_error
 
 from accounts.views.profile import profile
-from .views import index
 from accounts.views.auth import signup, logout_user, login_user
-from cyjeApp.views import index
-from QRCode.views import qr_code, qr_code_detail, delete_qrcode
+from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index
+from analytics.views import global_stats_view
 from  dockerApp import  settings
+from tracking.views import scan_redirect
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('500/', server_error),
@@ -39,5 +40,9 @@ urlpatterns = [
     path('qrcode/<str:uuid>/', qr_code_detail, name='qr_code_detail'),
     path('qrcode/<str:uuid>/delete', delete_qrcode, name='delete-qrcode'),
 
-]
+    path('access/<uuid:uuid_str>/', scan_redirect, name='scan-redirect'),
+
+    path('global/', global_stats_view, name='global_stats'),
+
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
