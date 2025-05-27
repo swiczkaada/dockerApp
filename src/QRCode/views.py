@@ -6,7 +6,11 @@ from io import BytesIO
 
 from QRCode.models import QRCode
 
-
+from django.utils.timezone import now
+from datetime import timedelta
+from tracking.models import Scan
+from django.db.models import Count
+import json
 
 # Create your views here.
 '''
@@ -84,8 +88,29 @@ def qr_code_detail(request, uuid):
             qrcode.save()
             return redirect('qr_code_detail', uuid=qrcode.uuid)
 
-    return render(request, 'QRCode/detail.html', context={'qrcode': qrcode})
+    # Récupérer scans des 7 derniers jours pour ce QR code
+    last_7_days = now().date() - timedelta(days=6)
+    scans_by_day_qs = (
+        Scan.objects.filter(qrcode=qrcode, timestamp__date__gte=last_7_days)
+        .values('timestamp__date')
+        .annotate(total=Count('id'))
+        .order_by('timestamp__date')
+    )
 
+    scans_dict = {entry['timestamp__date'].isoformat(): entry['total'] for entry in scans_by_day_qs}
+
+    labels = []
+    data = []
+    for i in range(7):
+        day = (last_7_days + timedelta(days=i)).isoformat()
+        labels.append(day)
+        data.append(scans_dict.get(day, 0))
+
+    return render(request, 'QRCode/detail.html', context={
+        'qrcode': qrcode,
+        'labels': json.dumps(labels),
+        'data': json.dumps(data),
+    })
 def delete_qrcode(request,uuid):
     qrcode = get_object_or_404(QRCode, uuid=uuid)
     if qrcode:

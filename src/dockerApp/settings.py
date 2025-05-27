@@ -44,10 +44,11 @@ INSTALLED_APPS = [
     'QRCode',
     'tracking',
     'analytics',
-    'rest_framework',
+    'tailwind',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Middleware pour CORS
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -135,3 +136,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Pour développement local uniquement !
+CORS_ALLOW_ALL_ORIGINS = True  # à restreindre en prod
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']  # React dev server

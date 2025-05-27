@@ -8,23 +8,30 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <a href="{% url 'index' %}" class="logo">La boutique de Adam</a>
-            <nav>
-                {% if user.is_authenticated %}
-                    <span class="user">Bonjour, {{ user.username }}</span>
-                    <a href="{% url 'profile' %}">Mon compte</a>
-                    <a href="{% url 'logout' %}" class="btn btn-logout">Se déconnecter</a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="btn">Se connecter</a>
-                    <a href="{% url 'signup' %}" class="btn btn-primary">S'inscrire</a>
-                {% endif %}
-            </nav>
-        </div>
-    </header>
+<header>
+    <div class="container">
+        <a href="{% url 'index' %}" class="logo">La boutique de Adam</a>
+        <nav>
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}">Mon compte ({{ user.username }})</a>
+                <a href="{% url 'qr_code' %}">Mes QR Codes</a>
+                <a href="{% url 'global_stats' %}">Statistiques globales</a>
+                <a href="{% url 'logout' %}" class="btn btn-logout">Se déconnecter</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn">Se connecter</a>
+                <a href="{% url 'signup' %}" class="btn btn-primary">S'inscrire</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
     <main class="container">
         {% block content %}{% endblock %}
     </main>
 </body>
+<footer>
+    <div class="container">
+        <p>&copy; 2025 La boutique de Adam. Tous droits réservés.</p>
+    </div>
+</footer>
 </html>

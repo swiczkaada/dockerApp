@@ -1,16 +1,148 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-    <p>Bienvenue dans notre app !</p>
-    <h1>Statistiques globales</h1>
-    <ul>
-        <li>Total des scans : {{ total_scans }}</li>
-        <li>Total des QR codes : {{ total_qrcodes }}</li>
-        <li>Scans par jour :</li>
-        <ul>
-            {% for day, count in scans_by_day.items %}
-                <li>{{ day }} : {{ count }}</li>
-            {% endfor %}
-        </ul>
-    </ul>
+  <h2>Statistiques Globales</h2>
+
+  <p><strong>Total QR Codes:</strong> {{ total_qrcodes }}</p>
+  <p><strong>Total Scans:</strong> {{ total_scans }}</p>
+  <p><strong>Moyenne quotidienne des scans (30 derniers jours):</strong> {{ avg_daily_scans|floatformat:2 }}</p>
+
+  <h3>Répartition des scans par jour (30 derniers jours)</h3>
+  <canvas id="scansByDayChart" width="700" height="300"></canvas>
+
+  <h3>Répartition des scans par mois (6 derniers mois)</h3>
+  <canvas id="scansByMonthChart" width="700" height="300"></canvas>
+
+  <h3>Top 5 des QR Codes les plus scannés</h3>
+  <canvas id="topQRCodesChart" width="700" height="300"></canvas>
+
+  <h3>Distribution des scans par heure de la journée</h3>
+  <canvas id="scansByHourChart" width="700" height="300"></canvas>
+
+  <h3>QR Codes actifs vs inactifs</h3>
+  <canvas id="qrcodeActiveChart" width="400" height="400"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Data parsed from Django context (JSON safe)
+    const labels30Days = {{ labels_30_days|safe }};
+    const data30Days = {{ data_30_days|safe }};
+
+    const labels6Months = {{ labels_6_months|safe }};
+    const data6Months = {{ data_6_months|safe }};
+
+    const topQRCodesLabels = {{ top_qrcodes_labels|safe }};
+    const topQRCodesData = {{ top_qrcodes_data|safe }};
+
+    const hoursLabels = {{ hours_labels|safe }};
+    const scansByHourData = {{ scans_by_hour_data|safe }};
+
+    const activeCount = {{ active_count }};
+    const inactiveCount = {{ inactive_count }};
+
+    // Scans par jour (30 derniers jours)
+    new Chart(document.getElementById('scansByDayChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels30Days,
+        datasets: [{
+          label: 'Scans par jour (30 derniers jours)',
+          data: data30Days,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } },
+        responsive: true,
+      }
+    });
+
+    // Scans par mois (6 derniers mois)
+    new Chart(document.getElementById('scansByMonthChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: labels6Months,
+        datasets: [{
+          label: 'Scans par mois (6 derniers mois)',
+          data: data6Months,
+          backgroundColor: 'rgba(255, 159, 64, 0.6)',
+          borderColor: 'rgba(255, 159, 64, 1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } },
+        responsive: true,
+      }
+    });
+
+    // Top 5 QR Codes les plus scannés
+    new Chart(document.getElementById('topQRCodesChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: topQRCodesLabels,
+        datasets: [{
+          label: 'Nombre de scans',
+          data: topQRCodesData,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } },
+        responsive: true,
+      }
+    });
+
+    // Distribution par heure de la journée
+    new Chart(document.getElementById('scansByHourChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: hoursLabels,
+        datasets: [{
+          label: 'Scans par heure',
+          data: scansByHourData,
+          backgroundColor: 'rgba(153, 102, 255, 0.6)',
+          borderColor: 'rgba(153, 102, 255, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true }, x: { title: { display: true, text: 'Heure (0-23)' } } },
+        responsive: true,
+      }
+    });
+
+    // QR Codes actifs vs inactifs (Pie chart)
+    new Chart(document.getElementById('qrcodeActiveChart').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Actifs', 'Inactifs'],
+        datasets: [{
+          data: [activeCount, inactiveCount],
+          backgroundColor: [
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 99, 132, 0.7)'
+          ],
+          borderColor: [
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 99, 132, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '60%',
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  </script>
 {% endblock %}

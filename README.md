@@ -70,10 +70,32 @@ Installer la bilbiotheque pour crypter les adresses ip :
 pip install cryptography
 ```
 
+
+Il faut pour relativedelta si tu ne l'as pas déjà.
+pip install python-dateutil
+
+
+
+pip install django-tailwind==4.0.1
+
+
+
 Installer Django REST Framework (DRF) (pour exporter les donnes)
 ```bash
 pip install djangorestframework
 ```
+ pip install django-cors-headers
+
+npm install react-router-dom axios
+nvm install 20
+nvm use 20
+ npm install
+
+npm start
+
 
 https://www.youtube.com/watch?v=odIR-00ggVI
 $ python manage.py runserver 192.168.1.149:8000
+
+
+

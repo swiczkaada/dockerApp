@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.defaults import server_error
 
-from accounts.views.profile import profile
+from accounts.views.profile import profile, search_users
 from accounts.views.auth import signup, logout_user, login_user
 from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index
 from analytics.views import global_stats_view
@@ -43,6 +43,9 @@ urlpatterns = [
     path('access/<uuid:uuid_str>/', scan_redirect, name='scan-redirect'),
 
     path('global/', global_stats_view, name='global_stats'),
+    path('search-users/', search_users, name='search_users'),
+
+    path('api/accounts/', include('accounts.api.urls')),  # ✅ Routes React/API
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

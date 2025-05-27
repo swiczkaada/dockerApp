@@ -1,25 +1,214 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Votre compte</h1>
-    <p>Bienvenue, {{ user.username }} !</p>
-    <p>Votre adresse e-mail : {{ user.email }}</p>
-    <p>Votre date d'inscription : {{ user.date_joined|date:"d M Y" }}</p>
-    <p>Votre dernier accès : {{ user.last_login|date:"d M Y H:i" }}</p>
+<div class="profile-container">
+    <aside class="profile-sidebar">
+        <h1>Votre compte</h1>
+        <!--<p>Bienvenue, {{ user.username }} !</p>
+        <p>Email : {{ user.email }}</p> -->
+        <p>Inscrit depuis : {{ user.date_joined|date:"d M Y" }}</p>
+        <p>Dernier accès : {{ user.last_login|date:"d M Y H:i" }}</p>
 
-     <a href="{% url 'qr_code' %}">Acceder à mes qr codes</a>
+        <nav>
+            <ul id="profile-menu">
+                <li class="menu-item active" data-section="info-personnelles">Informations personnelles</li>
+                <li class="menu-item" data-section="parametres-compte">Paramètres du compte</li>
+                <li class="menu-item" data-section="activite-recente">Activité récente</li>
 
-    <h2>Modifier votre profile </h2>
-    <form method="POST">
-        {% csrf_token %}
-        <p>
-            <label for="email">Adresse e-mail</label>
-            <input type="email" name="email" id="email" value="{{ user.email }}" required>
-        </p>
-        <p>
-            <label for="username">Nom d'utilisateur</label>
-            <input type="text" name="username" id="username" value="{{ user.username }}" required>
-        </p>
-        <button type="submit">Mettre à jour</button>
-    </form>
+                {% if user.is_admin or user.is_super_admin %}
+                <li class="menu-item" data-section="gestion-utilisateurs">Gestion des utilisateurs</li>
+                {% endif %}
+
+                <li class="menu-item" data-section="aide-doc">Aide & Documentation</li>
+            </ul>
+        </nav>
+    </aside>
+
+    <section class="profile-content">
+        <!-- Section 1: Informations personnelles -->
+        <div id="info-personnelles" class="section-content active">
+            <h2>Informations personnelles</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="email">Adresse e-mail</label>
+                    <input type="email" name="email" id="email" value="{{ user.email }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur</label>
+                    <input type="text" name="username" id="username" value="{{ user.username }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="first_name">Prénom</label>
+                    <input type="text" name="first_name" id="first_name" value="{{ user.first_name }}">
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Nom</label>
+                    <input type="text" name="last_name" id="last_name" value="{{ user.last_name }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            </form>
+        </div>
+
+
+        <!-- Section 3: Paramètres du compte -->
+        <div id="parametres-compte" class="section-content">
+            <h2>Paramètres du compte</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="notifications">Notifications par email</label>
+                    <select id="notifications" name="notifications">
+                        <option value="1" {% if user.profile.notifications %}selected{% endif %}>Activées</option>
+                        <option value="0" {% if not user.profile.notifications %}selected{% endif %}>Désactivées</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="language">Langue</label>
+                    <select id="language" name="language">
+                        <option value="fr" {% if user.profile.language == 'fr' %}selected{% endif %}>Français</option>
+                        <option value="en" {% if user.profile.language == 'en' %}selected{% endif %}>Anglais</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </form>
+        </div>
+
+        <!-- Section 4: Activité récente -->
+        <div id="activite-recente" class="section-content">
+            <h2>Activité récente</h2>
+            <ul>
+                {% for event in user.activity_logs.all %}
+                <li>{{ event.timestamp|date:"d M Y H:i" }} — {{ event.description }}</li>
+                {% empty %}
+                <li>Aucune activité récente.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Section 5: Gestion des utilisateurs (Admin & Super Admin) -->
+        {% if user.is_admin or user.is_super_admin %}
+        <div id="gestion-utilisateurs" class="section-content">
+            <h2>Gestion des utilisateurs</h2>
+                <input type="text" id="user-search" placeholder="Rechercher un utilisateur...">
+
+                <ul id="user-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+                    <!-- Résultats AJAX -->
+                </ul>
+        </div>
+        {% endif %}
+
+        <!-- Section 6: Aide & Documentation -->
+        <div id="aide-doc" class="section-content">
+            <h2>Aide & Documentation</h2>
+            <p>Consultez le manuel utilisateur</a> pour vous guider.</p>
+            <p>FAQ, tutoriels et support disponibles via la page Support</a>.</p>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Script simple pour gérer le changement de section sans recharger la page
+    document.querySelectorAll('#profile-menu .menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            // Enlever active sur tous
+            document.querySelectorAll('#profile-menu .menu-item').forEach(i => i.classList.remove('active'));
+            // Ajouter active sur celui cliqué
+            item.classList.add('active');
+
+            // Cacher toutes les sections
+            document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+
+            // Afficher la section correspondante
+            const sectionId = item.getAttribute('data-section');
+            document.getElementById(sectionId).classList.add('active');
+        });
+    });
+</script>
+<script>
+let currentPage = 1;
+let query = '';
+let isLoading = false;
+let hasNext = true;
+
+const searchInput = document.getElementById('user-search');
+const userList = document.getElementById('user-list');
+
+function loadUsers(reset = false) {
+    if (isLoading || !hasNext) return;
+    isLoading = true;
+
+    fetch(`/search-users/?q=${encodeURIComponent(query)}&page=${currentPage}`)
+        .then(response => response.json())
+        .then(data => {
+            if (reset) userList.innerHTML = '';
+
+            data.results.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = `${user.username} - ${user.email}`;
+                userList.appendChild(li);
+            });
+
+            hasNext = data.has_next;
+            isLoading = false;
+            currentPage++;
+        });
+}
+
+// Recherche à chaque frappe
+searchInput.addEventListener('input', () => {
+    query = searchInput.value.trim();
+    currentPage = 1;
+    hasNext = true;
+    loadUsers(true);
+});
+
+// Scroll infini
+userList.addEventListener('scroll', () => {
+    const scrollBottom = userList.scrollTop + userList.clientHeight >= userList.scrollHeight - 20;
+    if (scrollBottom) {
+        loadUsers();
+    }
+});
+
+// Chargement initial
+loadUsers();
+</script>
+
+<style>
+    /* Adaptations pour menu actif et sections */
+    .profile-sidebar nav ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .profile-sidebar nav ul li.menu-item {
+        padding: 10px 15px;
+        margin-bottom: 5px;
+        cursor: pointer;
+        border-radius: var(--radius);
+        transition: background-color 0.3s ease;
+        color: var(--secondary);
+    }
+
+    .profile-sidebar nav ul li.menu-item:hover {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    .profile-sidebar nav ul li.menu-item.active {
+        background-color: var(--primary);
+        color: white;
+        font-weight: bold;
+    }
+
+    .section-content {
+        display: none;
+    }
+
+    .section-content.active {
+        display: block;
+    }
+</style>
+
 {% endblock %}
