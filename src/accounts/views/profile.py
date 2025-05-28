@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.contrib import messages
 import json
 
 from accounts.models import CustomUser
@@ -19,13 +20,22 @@ def profile(request):
     """
     if request.user.is_authenticated:
 
+        # Seulement les 20 derniers logs d'activité de l'utilisateur
+        recent_logs = ActivityLog.objects.filter(user=request.user).order_by('-timestamp')[:20]
+
         # If the request method is POST, update the user's profile
         if request.method == "POST":
             user = request.user
-            user.email = request.POST.get('email')
+            #user.email = request.POST.get('email') # Commented out to prevent email changes
             user.username = request.POST.get('username')
             user.first_name = request.POST.get('first_name')
             user.last_name = request.POST.get('last_name')
+
+            #Check if the user is trying to change their username to one that already exists
+            if CustomUser.objects.filter(username=user.username).exclude(id=user.id).exists():
+                messages.error(request, "Ce nom d'utilisateur est déjà pris.")
+                return redirect('profile')
+
             user.save()
             # Register the log
             ActivityLog.objects.create(
@@ -33,11 +43,10 @@ def profile(request):
                 action_type='USER_UPDATED',
                 description=f'Profile mis à jour pour user {user.username}.',
             )
+            messages.success(request, "Profil mis à jour avec succès.")
             return redirect('profile')
         else :
-            # Seulement les 20 derniers logs d'activité de l'utilisateur
-            recent_logs = ActivityLog.objects.filter(user=request.user).order_by('-timestamp')[:20]
-            return render(request, 'accounts/profile.html', context = {'logs': recent_logs})
+            return render(request, 'accounts/profile.html')
     else:
         return redirect('login')  # Redirect to login if not authenticated
 
@@ -49,7 +58,7 @@ def search_users(request):
     query = request.GET.get('q', '')
     page = int(request.GET.get('page', 1))
     #Exclude the current user, admin and superuser on the search results,
-    users_qs = User.objects.exclude(id=request.user.id).exclude(permission__in=[2, 3])
+    users_qs = User.objects.exclude(id=request.user.id).exclude(permission__in=[2, 3]).order_by('-date_joined')
     if query:
         users_qs = users_qs.filter(Q(username__istartswith=query) | Q(email__istartswith=query))
 
@@ -121,3 +130,35 @@ def toggle_user_status(request):
         except Exception as e:
             return JsonResponse({'error': str(e)})
     return JsonResponse({'error': 'Méthode non autorisée.'})
+
+
+@login_required
+def update_password(request):
+    if request.method == 'POST':
+        user = request.user
+        new_password = request.POST.get('new_password')
+        confirm_new_password = request.POST.get('confirm_new_password')
+
+        if new_password:
+            if new_password != confirm_new_password:
+                return render(request, 'accounts/update_password.html', {
+                    'errors': ["Les mots de passe ne correspondent pas."],
+                })
+
+            if user.check_password(new_password):
+                return render(request, 'accounts/update_password.html', {
+                    'errors': ["Le nouveau mot de passe ne peut pas être identique à l'ancien."],
+                })
+
+            user.set_password(new_password)
+            user.save()
+
+            # Register the log
+            ActivityLog.objects.create(
+                user=user,
+                action_type='USER_UPDATED',
+                description='Mot de passe mis à jour.',
+            )
+            logout(request)
+            return redirect('login')  # Redirect to login after password update
+    return render(request, 'accounts/update_password.html')

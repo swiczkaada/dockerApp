@@ -1,3 +1,5 @@
+from django.contrib import messages
+
 from django.contrib.auth import get_user_model, login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -17,14 +19,15 @@ def signup(request):
 
         # Vérifier si l'utilisateur existe déjà
         if User.objects.filter(email=email).exists():
-            return render(request, 'accounts/signup.html', {'error': 'Cet email est déjà utilisé.'})
+            messages.error(request, "Cet email est déjà utilisé.")
+            return redirect("signup")
         if User.objects.filter(username=username).exists():
-            return render(request, 'accounts/signup.html', {'error': 'Ce nom d\'utilisateur est déjà pris.'})
-
+            messages.error(request,"Ce nom d\'utilisateur est déjà pris.")
+            return redirect("signup")
         #Verifier si les mots de passe correspondent
         if password != confirm_password:
-            return render(request, 'accounts/signup.html', {'error': 'Les mots de passe ne correspondent pas.'})
-
+            messages.error(request, "Les mots de passe ne correspondent pas.")
+            return redirect("signup")
         # Créer l'utilisateur
         user = User.objects.create_user(email=email, username=username, password=password)
         login(request, user)

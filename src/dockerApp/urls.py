@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.defaults import server_error
 
-from accounts.views.profile import profile, search_users, delete_user_view, toggle_user_status
+from accounts.views.profile import profile, search_users, delete_user_view, toggle_user_status, update_password
 from accounts.views.auth import signup, logout_user, login_user
 from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index, reload_qrcode_image
 from accounts.views.user_detail import user_detail_view, view_403
@@ -39,7 +39,13 @@ urlpatterns = [
     path('signup/', signup, name='signup'),
     path('logout/', logout_user, name='logout'),
     path('login/', login_user, name='login'),
+    path('update-password/', update_password, name='update_password'),
+
     path('profile/', profile, name='profile'),
+
+    path('search-users/', search_users, name='search_users'),
+    path('delete-user/', delete_user_view, name='delete_user'),
+    path('toggle-user-status/', toggle_user_status, name='toggle-user-status'),
 
     path('qrcode/', qr_code, name='qr_code'),
     path('qrcode/<str:uuid>/', qr_code_detail, name='qr_code_detail'),
@@ -49,10 +55,6 @@ urlpatterns = [
     path('access/<uuid:uuid_str>/', scan_redirect, name='scan-redirect'),
 
     path('global/', global_stats_view, name='global_stats'),
-    path('search-users/', search_users, name='search_users'),
-
-    path('delete-user/', delete_user_view, name='delete_user'),
-    path('toggle-user-status/', toggle_user_status, name='toggle-user-status'),
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
