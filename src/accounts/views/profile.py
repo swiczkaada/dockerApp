@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 import json
 
 from accounts.models import CustomUser
+from activityLog.models import ActivityLog
 
 User = get_user_model()
 @login_required()
@@ -26,18 +27,17 @@ def profile(request):
             user.first_name = request.POST.get('first_name')
             user.last_name = request.POST.get('last_name')
             user.save()
+            # Register the log
+            ActivityLog.objects.create(
+                user=user,
+                action_type='USER_UPDATED',
+                description=f'Profile mis à jour pour user {user.username}.',
+            )
             return redirect('profile')
         else :
-            context = {}
-            if request.user.is_admin() or request.user.is_superuser:
-                search_query = request.GET.get('search', '')
-                if search_query:
-                    users = User.objects.filter(Q(username__icontains=search_query) |
-                                                 Q(email__icontains=search_query)).exclude(id=request.user.id)
-                else:
-                    users = User.objects.exclude(id=request.user.id)
-                context['users'] = users
-            return render(request, 'accounts/profile.html', context)
+            # Seulement les 20 derniers logs d'activité de l'utilisateur
+            recent_logs = ActivityLog.objects.filter(user=request.user).order_by('-timestamp')[:20]
+            return render(request, 'accounts/profile.html', context = {'logs': recent_logs})
     else:
         return redirect('login')  # Redirect to login if not authenticated
 
@@ -53,7 +53,7 @@ def search_users(request):
     if query:
         users_qs = users_qs.filter(Q(username__istartswith=query) | Q(email__istartswith=query))
 
-    paginator = Paginator(users_qs, 5)
+    paginator = Paginator(users_qs, 20)
     users_page = paginator.get_page(page)
 
     data = [{
@@ -86,6 +86,12 @@ def delete_user_view(request):
 
     try:
         User.objects.delete_user(user_to_delete)
+        # Register the log
+        ActivityLog.objects.create(
+            user=request.user,
+            action_type='USER_DELETED',
+            description=f'Utilisateur {user_to_delete.username} supprimé avec succès.',
+        )
     except ValueError as e:
         return JsonResponse({'error': str(e)}, status=400)
 
@@ -102,6 +108,13 @@ def toggle_user_status(request):
             user = CustomUser.objects.get(email=email)
             user.is_active = not user.is_active
             user.save()
+
+            # Register the log
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='USER_REACTIVATED' if user.is_active else 'USER_DEACTIVATED',
+                description=f"Statut de l'utilisateur {user.username} mis à {'actif' if user.is_active else 'inactif'}.",
+            )
             return JsonResponse({'success': 'Statut mis à jour.', 'is_active': user.is_active})
         except CustomUser.DoesNotExist:
             return JsonResponse({'error': 'Utilisateur non trouvé.'})

@@ -17,7 +17,7 @@ def scan_redirect(request,uuid_str):
             'message': "Ce QR code n'existe pas ou a été supprimé."
         })
 
-    if not qrcode.is_active:
+    if not qrcode.is_active or not qrcode.user.is_active:
         return render(request, 'QRCode/invalid.html', {
             'message': "Ce QR code n'est plus valide ou a été désactivé."
         })

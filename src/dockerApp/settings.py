@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'analytics',
     'tailwind',
     'theme',
+    'activityLog'
 ]
 
 MIDDLEWARE = [

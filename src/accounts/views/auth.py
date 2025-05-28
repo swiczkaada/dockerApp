@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model, login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
+from activityLog.models import ActivityLog
+
 User = get_user_model()
 # Create your views here.
 
@@ -14,6 +16,13 @@ def signup(request):
 
         user = User.objects.create_user(email=email, username=username, password=password)
         login(request, user)
+
+        # Register the log
+        ActivityLog.objects.create(
+            user=user,
+            action_type='USER_CREATED',
+            description=f'User {username} enregistré avec succès.',
+        )
         return redirect('index')  # Rediriger vers la page d'accueil du store)
     return render(request, 'accounts/signup.html')
 
