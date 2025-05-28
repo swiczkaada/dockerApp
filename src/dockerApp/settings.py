@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'tracking',
     'analytics',
     'tailwind',
+    'theme',
 ]
 
 MIDDLEWARE = [
@@ -137,7 +138,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
-# Pour développement local uniquement !
-CORS_ALLOW_ALL_ORIGINS = True  # à restreindre en prod
-
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']  # React dev server
+TAILWIND_APP_NAME = 'theme'
+INTERNAL_IPS = [
+    "127.0.0.1"
+]

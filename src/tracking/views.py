@@ -8,8 +8,19 @@ def scan_redirect(request,uuid_str):
     """
     Enregistre un scan pour le QR Code correspondant à l'UUID donné,
     puis redirige vers l'URL cible définie par le QR code.
+    Redirige vers l'URL cible du QR Code si actif, sinon affiche un message d'erreur.
     """
-    qrcode = get_object_or_404(QRCode, uuid=uuid_str, is_active=True)
+    try:
+        qrcode = QRCode.objects.get(uuid=uuid_str)
+    except QRCode.DoesNotExist:
+        return render(request, 'QRCode/invalid.html', {
+            'message': "Ce QR code n'existe pas ou a été supprimé."
+        })
+
+    if not qrcode.is_active:
+        return render(request, 'QRCode/invalid.html', {
+            'message': "Ce QR code n'est plus valide ou a été désactivé."
+        })
 
     # Récupération des infos du scan
     ip = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')

@@ -1,83 +1,87 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="profile-container">
-    <aside class="profile-sidebar">
-        <h1>Votre compte</h1>
-        <!--<p>Bienvenue, {{ user.username }} !</p>
-        <p>Email : {{ user.email }}</p> -->
-        <p>Inscrit depuis : {{ user.date_joined|date:"d M Y" }}</p>
-        <p>Dernier accès : {{ user.last_login|date:"d M Y H:i" }}</p>
-
-        <nav>
-            <ul id="profile-menu">
-                <li class="menu-item active" data-section="info-personnelles">Informations personnelles</li>
-                <li class="menu-item" data-section="parametres-compte">Paramètres du compte</li>
-                <li class="menu-item" data-section="activite-recente">Activité récente</li>
-
+<div class="flex max-w-7xl mx-auto bg-white rounded-md shadow-lg overflow-hidden mt-8" style="min-height: 600px;">
+    <!-- Sidebar -->
+    <aside class="w-72 bg-blue-900 text-blue-100 p-6 flex flex-col">
+        <h1 class="text-2xl font-bold mb-6 border-b border-blue-700 pb-3">Votre compte</h1>
+        <div class="mb-6 text-sm space-y-1">
+            <p><span class="font-semibold">Inscrit depuis :</span> {{ user.date_joined|date:"d M Y" }}</p>
+            <p><span class="font-semibold">Dernier accès :</span> {{ user.last_login|date:"d M Y H:i" }}</p>
+        </div>
+        <nav class="flex-1">
+            <ul id="profile-menu" class="space-y-2">
+                <li class="menu-item cursor-pointer px-4 py-2 rounded-md bg-blue-800 font-semibold active hover:bg-blue-700" data-section="info-personnelles">Informations personnelles</li>
+                <li class="menu-item cursor-pointer px-4 py-2 rounded-md hover:bg-blue-700" data-section="parametres-compte">Paramètres du compte</li>
+                <li class="menu-item cursor-pointer px-4 py-2 rounded-md hover:bg-blue-700" data-section="activite-recente">Activité récente</li>
                 {% if user.is_admin or user.is_super_admin %}
-                <li class="menu-item" data-section="gestion-utilisateurs">Gestion des utilisateurs</li>
+                <li class="menu-item cursor-pointer px-4 py-2 rounded-md hover:bg-blue-700" data-section="gestion-utilisateurs">Gestion des utilisateurs</li>
                 {% endif %}
-
-                <li class="menu-item" data-section="aide-doc">Aide & Documentation</li>
+                <li class="menu-item cursor-pointer px-4 py-2 rounded-md hover:bg-blue-700" data-section="aide-doc">Aide & Documentation</li>
             </ul>
         </nav>
     </aside>
 
-    <section class="profile-content">
+    <!-- Content -->
+    <section class="flex-1 p-8 bg-gray-50 overflow-auto">
         <!-- Section 1: Informations personnelles -->
-        <div id="info-personnelles" class="section-content active">
-            <h2>Informations personnelles</h2>
-            <form method="POST">
+        <div id="info-personnelles" class="section-content active space-y-6">
+            <h2 class="text-2xl font-bold text-blue-900 mb-4">Informations personnelles</h2>
+            <form method="POST" class="space-y-4 max-w-lg">
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="email">Adresse e-mail</label>
-                    <input type="email" name="email" id="email" value="{{ user.email }}" required>
+                <div>
+                    <label for="email" class="block text-blue-800 font-semibold mb-1">Adresse e-mail</label>
+                    <input type="email" name="email" id="email" value="{{ user.email }}" required
+                        class="w-full rounded-md border border-blue-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-700 transition" />
                 </div>
-                <div class="form-group">
-                    <label for="username">Nom d'utilisateur</label>
-                    <input type="text" name="username" id="username" value="{{ user.username }}" required>
+                <div>
+                    <label for="username" class="block text-blue-800 font-semibold mb-1">Nom d'utilisateur</label>
+                    <input type="text" name="username" id="username" value="{{ user.username }}" required
+                        class="w-full rounded-md border border-blue-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-700 transition" />
                 </div>
-                <div class="form-group">
-                    <label for="first_name">Prénom</label>
-                    <input type="text" name="first_name" id="first_name" value="{{ user.first_name }}">
+                <div>
+                    <label for="first_name" class="block text-blue-800 font-semibold mb-1">Prénom</label>
+                    <input type="text" name="first_name" id="first_name" value="{{ user.first_name }}"
+                        class="w-full rounded-md border border-blue-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-700 transition" />
                 </div>
-                <div class="form-group">
-                    <label for="last_name">Nom</label>
-                    <input type="text" name="last_name" id="last_name" value="{{ user.last_name }}">
+                <div>
+                    <label for="last_name" class="block text-blue-800 font-semibold mb-1">Nom</label>
+                    <input type="text" name="last_name" id="last_name" value="{{ user.last_name }}"
+                        class="w-full rounded-md border border-blue-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-700 transition" />
                 </div>
-                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                <button type="submit"
+                    class="bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-md px-6 py-3 shadow transition">Mettre à jour</button>
             </form>
         </div>
 
-
-        <!-- Section 3: Paramètres du compte -->
-        <div id="parametres-compte" class="section-content">
-            <h2>Paramètres du compte</h2>
-            <form method="POST">
+        <!-- Section 2: Paramètres du compte -->
+        <div id="parametres-compte" class="section-content space-y-6 hidden">
+            <h2 class="text-2xl font-bold text-blue-900 mb-4">Paramètres du compte</h2>
+            <form method="POST" class="space-y-4 max-w-lg">
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="notifications">Notifications par email</label>
-                    <select id="notifications" name="notifications">
+                <div>
+                    <label for="notifications" class="block text-blue-800 font-semibold mb-1">Notifications par email</label>
+                    <select id="notifications" name="notifications" class="w-full rounded-md border border-blue-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-700 transition">
                         <option value="1" {% if user.profile.notifications %}selected{% endif %}>Activées</option>
                         <option value="0" {% if not user.profile.notifications %}selected{% endif %}>Désactivées</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="language">Langue</label>
-                    <select id="language" name="language">
+                <div>
+                    <label for="language" class="block text-blue-800 font-semibold mb-1">Langue</label>
+                    <select id="language" name="language" class="w-full rounded-md border border-blue-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-700 transition">
                         <option value="fr" {% if user.profile.language == 'fr' %}selected{% endif %}>Français</option>
                         <option value="en" {% if user.profile.language == 'en' %}selected{% endif %}>Anglais</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <button type="submit"
+                    class="bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-md px-6 py-3 shadow transition">Enregistrer</button>
             </form>
         </div>
 
-        <!-- Section 4: Activité récente -->
-        <div id="activite-recente" class="section-content">
-            <h2>Activité récente</h2>
-            <ul>
+        <!-- Section 3: Activité récente -->
+        <div id="activite-recente" class="section-content space-y-4 hidden">
+            <h2 class="text-2xl font-bold text-blue-900 mb-4">Activité récente</h2>
+            <ul class="list-disc list-inside max-w-lg text-gray-700">
                 {% for event in user.activity_logs.all %}
                 <li>{{ event.timestamp|date:"d M Y H:i" }} — {{ event.description }}</li>
                 {% empty %}
@@ -86,23 +90,23 @@
             </ul>
         </div>
 
-        <!-- Section 5: Gestion des utilisateurs (Admin & Super Admin) -->
+        <!-- Section 4: Gestion des utilisateurs (Admin & Super Admin) -->
         {% if user.is_admin or user.is_super_admin %}
-        <div id="gestion-utilisateurs" class="section-content">
-            <h2>Gestion des utilisateurs</h2>
-                <input type="text" id="user-search" placeholder="Rechercher un utilisateur...">
-
-                <ul id="user-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
-                    <!-- Résultats AJAX -->
-                </ul>
+        <div id="gestion-utilisateurs" class="section-content space-y-4 hidden max-w-lg">
+            <h2 class="text-2xl font-bold text-blue-900 mb-4">Gestion des utilisateurs</h2>
+            <input type="text" id="user-search" placeholder="Rechercher un utilisateur..."
+                class="w-full rounded-md border border-blue-300 px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-700 transition" />
+            <ul id="user-list" class="max-h-72 overflow-y-auto border border-blue-300 rounded-md p-4 space-y-2 text-gray-800">
+                <!-- Résultats AJAX -->
+            </ul>
         </div>
         {% endif %}
 
-        <!-- Section 6: Aide & Documentation -->
-        <div id="aide-doc" class="section-content">
-            <h2>Aide & Documentation</h2>
-            <p>Consultez le manuel utilisateur</a> pour vous guider.</p>
-            <p>FAQ, tutoriels et support disponibles via la page Support</a>.</p>
+        <!-- Section 5: Aide & Documentation -->
+        <div id="aide-doc" class="section-content space-y-4 hidden max-w-lg text-gray-700">
+            <h2 class="text-2xl font-bold text-blue-900 mb-4">Aide & Documentation</h2>
+            <p>Consultez le manuel utilisateur pour vous guider.</p>
+            <p>FAQ, tutoriels et support disponibles via la page Support.</p>
         </div>
     </section>
 </div>
@@ -134,6 +138,53 @@ let hasNext = true;
 const searchInput = document.getElementById('user-search');
 const userList = document.getElementById('user-list');
 
+function deleteUser(userEmail, liElement) {
+    if (!confirm(`Voulez-vous vraiment supprimer l'utilisateur ${userEmail} ?`)) return;
+
+    fetch('/delete-user/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: userEmail }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.success);
+            // Supprime l'élément de la liste
+            liElement.remove();
+        } else if (data.error) {
+            alert('Erreur : ' + data.error);
+        }
+    })
+    .catch(() => alert('Erreur lors de la suppression.'));
+}
+function toggleUserStatus(email, button) {
+    fetch('/toggle-user-status/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && typeof data.is_active !== 'undefined') {
+            button.textContent = data.is_active ? 'Actif' : 'Inactif';
+            button.classList.remove('border-green-500', 'text-green-600', 'border-red-500', 'text-red-600');
+            if (data.is_active) {
+                button.classList.add('border-green-500', 'text-green-600');
+            } else {
+                button.classList.add('border-red-500', 'text-red-600');
+            }
+        } else {
+            alert(data.error || 'Erreur lors de la mise à jour du statut.');
+        }
+    })
+    .catch(() => alert('Erreur réseau.'));
+}
+
 function loadUsers(reset = false) {
     if (isLoading || !hasNext) return;
     isLoading = true;
@@ -145,7 +196,35 @@ function loadUsers(reset = false) {
 
             data.results.forEach(user => {
                 const li = document.createElement('li');
-                li.textContent = `${user.username} - ${user.email}`;
+                li.style.display = 'flex';
+                li.style.justifyContent = 'space-between';
+                li.style.alignItems = 'center';
+                li.style.padding = '4px 0';
+
+                const userInfo = document.createElement('span');
+                userInfo.textContent = `${user.username} - ${user.email}`;
+
+                // Bouton Actif/Inactif
+                const statusBtn = document.createElement('button');
+                statusBtn.textContent = user.is_active ? 'Actif' : 'Inactif';
+                statusBtn.className = `px-3 py-1 text-sm font-medium rounded-full border transition
+                    ${user.is_active ? 'border-green-500 text-green-600' : 'border-red-500 text-red-600'}`;
+                statusBtn.addEventListener('click', () => toggleUserStatus(user.email, statusBtn));
+
+                const btn = document.createElement('button');
+                btn.textContent = 'Supprimer';
+                btn.style.backgroundColor = '#e53e3e';
+                btn.style.color = 'white';
+                btn.style.border = 'none';
+                btn.style.padding = '4px 8px';
+                btn.style.borderRadius = '4px';
+                btn.style.cursor = 'pointer';
+
+                btn.addEventListener('click', () => deleteUser(user.email, li));
+
+                li.appendChild(userInfo);
+                li.appendChild(btn);
+                li.appendChild(statusBtn);
                 userList.appendChild(li);
             });
 

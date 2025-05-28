@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 User = get_user_model()
@@ -16,6 +17,7 @@ def signup(request):
         return redirect('index')  # Rediriger vers la page d'accueil du store)
     return render(request, 'accounts/signup.html')
 
+@login_required
 def logout_user(request):
         logout(request)
         return redirect('index')  # Rediriger vers la page d'accueil du store

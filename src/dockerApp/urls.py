@@ -19,9 +19,9 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.defaults import server_error
 
-from accounts.views.profile import profile, search_users
+from accounts.views.profile import profile, search_users, delete_user_view, toggle_user_status
 from accounts.views.auth import signup, logout_user, login_user
-from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index
+from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index, reload_qrcode_image
 from analytics.views import global_stats_view
 from  dockerApp import  settings
 from tracking.views import scan_redirect
@@ -39,6 +39,7 @@ urlpatterns = [
     path('qrcode/', qr_code, name='qr_code'),
     path('qrcode/<str:uuid>/', qr_code_detail, name='qr_code_detail'),
     path('qrcode/<str:uuid>/delete', delete_qrcode, name='delete-qrcode'),
+    path('qrcode/<str:uuid>/reload/', reload_qrcode_image, name='reload-qrcode-image'),
 
     path('access/<uuid:uuid_str>/', scan_redirect, name='scan-redirect'),
 
@@ -46,6 +47,9 @@ urlpatterns = [
     path('search-users/', search_users, name='search_users'),
 
     path('api/accounts/', include('accounts.api.urls')),  # ✅ Routes React/API
+    path('delete-user/', delete_user_view, name='delete_user'),
+    path('toggle-user-status/', toggle_user_status, name='toggle-user-status'),
+
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

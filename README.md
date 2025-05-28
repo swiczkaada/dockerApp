@@ -77,7 +77,9 @@ pip install python-dateutil
 
 
 pip install django-tailwind==4.0.1
+python manage.py tailwind install
 
+ python manage.py tailwind start
 
 
 Installer Django REST Framework (DRF) (pour exporter les donnes)

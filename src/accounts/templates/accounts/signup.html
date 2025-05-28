@@ -1,21 +1,53 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>S'inscrire</h1>
-    <form method="POST" class="form-container">
+<div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 border border-blue-200">
+    <h1 class="text-3xl font-bold text-blue-900 mb-6 text-center">S'inscrire</h1>
+    <form method="POST" class="space-y-6">
         {% csrf_token %}
-        <div class="form-group">
-            <label for="email">Adresse e-mail</label>
-            <input type="email" name="email" id="email" required>
+        <div>
+            <label for="email" class="block text-blue-800 font-semibold mb-2">Adresse e-mail</label>
+            <input
+                type="email"
+                name="email"
+                id="email"
+                required
+                class="w-full px-4 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-600 transition"
+                placeholder="exemple@domaine.com"
+            >
         </div>
-        <div class="form-group">
-            <label for="username">Nom d'utilisateur</label>
-            <input type="text" name="username" id="username" required>
+        <div>
+            <label for="username" class="block text-blue-800 font-semibold mb-2">Nom d'utilisateur</label>
+            <input
+                type="text"
+                name="username"
+                id="username"
+                required
+                class="w-full px-4 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-600 transition"
+                placeholder="Votre nom d'utilisateur"
+            >
         </div>
-        <div class="form-group">
-            <label for="password">Mot de passe</label>
-            <input type="password" name="password" id="password" required>
+        <div>
+            <label for="password" class="block text-blue-800 font-semibold mb-2">Mot de passe</label>
+            <input
+                type="password"
+                name="password"
+                id="password"
+                required
+                class="w-full px-4 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-600 transition"
+                placeholder="Votre mot de passe"
+            >
         </div>
-        <button type="submit">S'inscrire</button>
+        <button
+            type="submit"
+            class="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 rounded-md shadow-md transition"
+        >
+            S'inscrire
+        </button>
     </form>
+    <p class="mt-6 text-center text-blue-700">
+        Déjà un compte ?
+        <a href="{% url 'login' %}" class="text-blue-900 font-semibold hover:underline">Connectez-vous ici</a>
+    </p>
+</div>
 {% endblock %}
