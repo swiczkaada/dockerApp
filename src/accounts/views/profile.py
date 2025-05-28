@@ -67,7 +67,7 @@ def search_users(request):
         'has_next': users_page.has_next()
     })
 
-@csrf_exempt  # désactivé CSRF pour cette API (à utiliser avec prudence)
+@csrf_exempt  # Allow CSRF exemption for this view (Ajax requests)
 @require_POST
 @login_required
 def delete_user_view(request):

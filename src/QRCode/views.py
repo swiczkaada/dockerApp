@@ -11,6 +11,7 @@ from QRCode.models import QRCode
 from django.utils.timezone import now
 from datetime import timedelta
 
+from activityLog.models import ActivityLog
 from dockerApp.settings import MEDIA_ROOT
 from tracking.models import Scan
 from django.db.models import Count
@@ -66,6 +67,14 @@ def qr_code(request):
             # Sauvegarde dans ImageField
             filename = f"{qr_code_obj.uuid}.png"
             qr_code_obj.qr_image.save(filename, ContentFile(buffer.getvalue()), save=True)
+
+            #Regiter the log
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='QR_CREATED',
+                description=f"QR Code créé : {title}",
+                url = qr_code_obj.target_url
+            )
         return redirect('qr_code')
 
     # Les qr codes de l'utilisateur connecté (id) user_id
@@ -104,6 +113,13 @@ def qr_code_detail(request, qrcode):
             qrcode.qr_image.save(filename, ContentFile(buffer.getvalue()), save=False)
 
             qrcode.save()
+            # Register the log
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='QR_UPDATED',
+                description=f"QR Code mis à jour : {title}",
+                url=qrcode.target_url
+            )
             return redirect('qr_code_detail', uuid=qrcode.uuid)
 
     # Stats - Scans sur les 7 derniers jours
@@ -170,6 +186,13 @@ def delete_qrcode(request,qrcode):
 
     if qrcode:
         qrcode.delete()
+        # Register the log
+        ActivityLog.objects.create(
+            user=request.user,
+            action_type='QR_DELETED',
+            description=f"QR Code effacé : {qrcode.title}",
+            url=qrcode.target_url
+        )
         print("QR Code deleted successfully.")
 
     return redirect('qr_code')

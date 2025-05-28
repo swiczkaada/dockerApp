@@ -13,7 +13,19 @@ def signup(request):
         email = request.POST.get('email')
         username = request.POST.get("username")
         password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
 
+        # Vérifier si l'utilisateur existe déjà
+        if User.objects.filter(email=email).exists():
+            return render(request, 'accounts/signup.html', {'error': 'Cet email est déjà utilisé.'})
+        if User.objects.filter(username=username).exists():
+            return render(request, 'accounts/signup.html', {'error': 'Ce nom d\'utilisateur est déjà pris.'})
+
+        #Verifier si les mots de passe correspondent
+        if password != confirm_password:
+            return render(request, 'accounts/signup.html', {'error': 'Les mots de passe ne correspondent pas.'})
+
+        # Créer l'utilisateur
         user = User.objects.create_user(email=email, username=username, password=password)
         login(request, user)
 

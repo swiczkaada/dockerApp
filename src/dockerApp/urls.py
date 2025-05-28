@@ -22,13 +22,18 @@ from django.views.defaults import server_error
 from accounts.views.profile import profile, search_users, delete_user_view, toggle_user_status
 from accounts.views.auth import signup, logout_user, login_user
 from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index, reload_qrcode_image
+from accounts.views.user_detail import user_detail_view, view_403
 from analytics.views import global_stats_view
 from  dockerApp import  settings
 from tracking.views import scan_redirect
 
 urlpatterns = [
+    path('admin/users/<str:username>/', user_detail_view, name='user_info'),
+
     path('admin/', admin.site.urls),
+
     path('500/', server_error),
+    path('403/', view_403, name='403'),
 
     path('', index, name='index'),
     path('signup/', signup, name='signup'),
@@ -46,7 +51,6 @@ urlpatterns = [
     path('global/', global_stats_view, name='global_stats'),
     path('search-users/', search_users, name='search_users'),
 
-    path('api/accounts/', include('accounts.api.urls')),  # ✅ Routes React/API
     path('delete-user/', delete_user_view, name='delete_user'),
     path('toggle-user-status/', toggle_user_status, name='toggle-user-status'),
 

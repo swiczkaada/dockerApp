@@ -24,6 +24,7 @@ class ActivityLog(models.Model):
     action_type = models.CharField(max_length=150, choices=ACTION_TYPES)
     description = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    url = models.URLField(max_length=1500, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user} - {self.action_type} @ {self.timestamp}"

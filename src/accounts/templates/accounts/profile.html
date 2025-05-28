@@ -225,11 +225,16 @@ function loadUsers(reset = false) {
                 const li = document.createElement('li');
                 li.className = 'flex items-center justify-between gap-4 py-2'; // espacement et alignement
 
+                // Info utilisateur (bouton cliquable et redirection vers page info)
                 const userInfo = document.createElement('span');
                 userInfo.className = 'flex-1 text-gray-800 truncate'; // prend tout l'espace dispo + ellipsis si trop long
                 userInfo.textContent = `${user.username} - ${user.email}`;
+                userInfo.classList.add('cursor-pointer', 'hover:underline');
+                userInfo.addEventListener('click', () => {
+                    window.location.href = `/admin/users/${encodeURIComponent(user.username)}/`;
+                });
 
-                // Bouton Supprimer pro style
+                // Bouton Supprimer
                 const btn = document.createElement('button');
                 btn.textContent = 'Supprimer';
                 btn.className = 'px-3 py-1 text-sm font-semibold text-red-600 border border-red-600 rounded-md hover:bg-red-600 hover:text-white transition';
