@@ -1,104 +1,110 @@
-freeze les libraries pour les garder en memoire 
+# Projet Django DockerApp
+
+Ce projet est une application Django prête à être déployée et développée localement.  
+Ce guide explique comment installer, configurer et lancer le projet.
+
+---
+
+## Prérequis
+
+- Python 3.10+ (ou version compatible)
+- pip
+- Git
+- (Optionnel) un environnement virtuel Python (`venv` recommandé)
+
+---
+
+## Installation
+
+1. **Cloner le dépôt**
+
 ```bash
-pip freeze > requirements.txt
+git clone https://github.com/ton-utilisateur/ton-projet.git
+cd ton-projet
 ```
 
-supprimer django 
+2. **Créer un environnement virtuel (optionnel mais recommandé)**
+
 ```bash
-pip uninstall django
+python -m venv venv
+source venv/bin/activate  # Sur Windows, utilisez `venv\Scripts\activate`
 ```
 
-Installer les libraries de requirement :
+3. **Installer les dépendances**
+
 ```bash
-pip install -r requirements.txt 
+pip install -r requirements.txt
 ```
 
-Creer structure app django
-```bash
-django-admin startproject dockerApp
-```
-```bash
-django-admin help {commande}
-```
+## Configuration
 
-lancer un serveur local
-django-admin mais ici
+### Fichier `.env`
+
+Le projet utilise un fichier `.env` pour stocker les variables d'environnement sensibles (clés secrètes, paramètres spécifiques à l'environnement).
+
+Un fichier `.env_example` est fourni pour vous guider dans la création de votre propre fichier `.env`.
+
+4. **Renommer le fichier `.env_example` en `.env`**
+
+```bash
+cd src/
+mv .env_example .env
+```
+5. **Génération des clés**
+
+- Clé Fernet
+
+```bash
+python src/generate_ferney_key.py
+```
+Copiez la clé générée et remplacez la valeur de DJANGO_FERNET_KEY dans votre `.env`.
+
+- Clé secrète Django
+
+```bash
+python src/generate_secret_key.py
+```
+Copiez la clé et mettez-la dans la variable DJANGO_SECRET_KEY de votre `.env`.
+
+## Lancer le projet 
+
+6. **Lancer le serveur de développement (par défaut localhost:8000) **
+
 ```bash
 python manage.py runserver
 ```
 
-Pour lancer la base de donnée
+7. **Pour accéder à l'application depuis un autre appareil, utilisez l'adresse IP locale de votre machine**
+
 ```bash
-ppython manage.py migrate 
+python manage.py runserver 0.0.0.0:8000 # Remplacer 0.0.0.0 par votre adresse ip 
 ```
 
-Pour creer une app :
+## Commandes Django utiles
+**Pour installer Tailwind CSS et lancer sa compilation**
+
 ```bash
-python manage.py startapp blog
+
+python manage.py tailwind install
+python manage.py tailwind start
 ```
+**Créer les fichiers de migration**
 
-Telecharger Pillow pour les images :
-```bash
-pip install Pillow
-```
-
-
-Créer fichiers de migrations : (historique des changements de la bdd)
 ```bash
 python manage.py makemigrations
 ```
 
-Migrer ses fichiers 
+**Appliquer les migrations**
+
 ```bash
 python manage.py migrate
 ```
 
-Creer un super utilisateur
+**Créer un super utilisateur**
 
 ```bash
- python manage.py createsuperuser
+python manage.py createsuperuser
 ```
-
-Installer la bibliotheque pour qrcode
-```bash
-pip install qrcode[pil]
-```
-
-Installer la bilbiotheque pour crypter les adresses ip :
-```bash
-pip install cryptography
-```
-
-Il faut pour relativedelta  pour la date 
-```bash
-pip install python-dateutil
-```
-
-Installer Taillwind CSS : 
-```bash
-pip install django-tailwind==4.0.1
-python manage.py tailwind install
-```
-
-Lancer la mise à jour automatique de Tailwind CSS : 
-```bash
- python manage.py tailwind start
-```
-
-Il faut pour relativedelta  pour la date 
-```bash
-pip install python-dateutil
-```
-
-Run le projet sans scanner les QR Codes
- python manage.py runserver
-
-Run le projet avec scan des QR Codes 
-python manage.py runserver {ip}:8000
-
-
-https://www.youtube.com/watch?v=odIR-00ggVI
-$ python manage.py runserver 192.168.1.149:8000
 
 
 
