@@ -26,6 +26,10 @@ import os
 import re
 from django.db.models import Q
 
+DOMAIN = os.environ.get('DOMAIN')
+PORT = os.environ.get('PORT', '8000')  # Default to 8000 if PORT is not set
+PROTOCOL = os.environ.get('PROTOCOL', 'http')
+
 
 # Create your views here.
 '''
@@ -40,6 +44,7 @@ from django.db.models import Q
 '''
 def index(request):
     context = {}
+
     if request.user.is_authenticated:
         today = now().date()
 
@@ -83,9 +88,8 @@ def qr_code(request):
                 is_active=True
             )
 
-            # Construire l'URL complète avec l'adresse IP
-            ip_address = '192.168.1.149:8000'  # Remplacez par l'adresse IP de votre serveur
-            qr_code_url = f'http://{ip_address}/access/{qr_code_obj.uuid}'
+            # Utilisation de l'IP ou du domaine pour générer l'URL du QR Code
+            qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qr_code_obj.uuid}'
 
             # Génération de l'image du QR Code
             img = qrcode_lib.make(qr_code_url)
@@ -130,8 +134,8 @@ def qr_code_detail(request, qrcode):
             qrcode.is_active = is_active
             qrcode.updated_at = now()
 
-            ip_address = '192.168.1.149:8000'  # Remplace par ton IP réelle
-            qr_code_url = f'http://{ip_address}/access/{qrcode.uuid}'
+            # Utilisation de l'IP ou du domaine pour générer l'URL du QR Code
+            qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qrcode.uuid}'
 
             # Regenerate QR code image
             img = qrcode_lib.make(qr_code_url)
@@ -231,8 +235,9 @@ def reload_qrcode_image(request, qrcode):
     #qrcode = get_object_or_404(QRCode, uuid=uuid)
 
     if qrcode.target_url:
-        ip_address = '192.168.1.149:8000'  # Remplace par ton IP réelle
-        qr_code_url = f'http://{ip_address}/access/{qrcode.uuid}'
+        # Utilisation de l'IP ou du domaine pour générer l'URL du QR Code
+        qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qrcode.uuid}'
+
         # Générer une nouvelle image QR Code
         img = qrcode_lib.make(qr_code_url)
         buffer = BytesIO()

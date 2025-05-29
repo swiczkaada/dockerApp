@@ -19,7 +19,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.defaults import server_error
 
-from accounts.views.profile import profile, search_users, delete_user_view, toggle_user_status, update_password
+from accounts.views.profile import profile, search_users, delete_user_view, toggle_user_status, update_password, \
+    doc_admin, doc_user, faq
 from accounts.views.auth import signup, logout_user, login_user
 from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index, reload_qrcode_image, search_qrcodes
 from accounts.views.user_detail import user_detail_view, view_403
@@ -58,5 +59,8 @@ urlpatterns = [
 
     path('search-qrcodes/', search_qrcodes, name='search_qrcodes'),
 
+    path('doc-admin/', doc_admin, name='doc_admin'),
+    path('doc-user/', doc_user, name='doc_user'),
+    path('FaQ/', faq, name="faq"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

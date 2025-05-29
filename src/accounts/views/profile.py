@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 import json
 
+from accounts.decorators import admin_or_superadmin_required
 from accounts.models import CustomUser
 from activityLog.models import ActivityLog
 
@@ -162,3 +163,50 @@ def update_password(request):
             logout(request)
             return redirect('login')  # Redirect to login after password update
     return render(request, 'accounts/update_password.html')
+
+@admin_or_superadmin_required
+def doc_admin(request):
+    """
+    Renders the documentation page.
+    """
+    return render(request, 'accounts/doc_admin.html')
+
+@login_required
+def doc_user(request):
+    """
+    Renders the user documentation page.
+    """
+    return render(request, 'accounts/doc_user.html')
+
+@login_required
+def faq(request):
+    """
+    Renders the FAQ page.
+    """
+    faq_sections = {
+        "Compte utilisateur": [
+            ("Comment puis-je changer mon mot de passe ?",
+             "Vous pouvez modifier votre mot de passe depuis la page « Mon compte », section « Informations personnelles ». Un lien dédié vous redirige vers la page de changement."),
+            ("J'ai oublié mon mot de passe. Que faire ?",
+             "Utilisez le lien « Mot de passe oublié ? » sur la page de connexion. Un e-mail vous sera envoyé pour réinitialiser votre mot de passe."),
+            ("Puis-je supprimer mon compte ?",
+             "La suppression définitive est possible via une demande à un administrateur. Contactez-nous via le formulaire de contact."),
+        ],
+        "QR Codes": [
+            ("Comment créer un nouveau QR Code ?",
+             "Accédez à la page « Mes QR Codes », puis cliquez sur le bouton « Créer un QR Code ». Remplissez les champs requis et validez."),
+            ("Puis-je modifier un QR Code après création ?",
+             "Oui, vous pouvez modifier le titre ou la redirection d’un QR Code via la page de détail."),
+            ("Un QR Code supprimé est-il récupérable ?",
+             "Non. La suppression est définitive. Vous pouvez toutefois le régénérer si besoin."),
+        ],
+        "Sécurité & Confidentialité": [
+            ("Mes QR Codes sont-ils visibles par d'autres utilisateurs ?",
+             "Non, chaque QR Code est privé et visible uniquement par son créateur, sauf si partagé manuellement."),
+            ("Comment mes données sont-elles protégées ?",
+             "Toutes les données sont stockées de manière sécurisée. Nous utilisons HTTPS, chiffrement des mots de passe et journalisation des accès."),
+            ("Puis-je désactiver temporairement un QR Code ?",
+             "Oui, vous pouvez désactiver un QR Code depuis la page de détail. Il ne sera alors plus fonctionnel."),
+        ]
+    }
+    return render(request, 'accounts/faq.html', context={'faq_sections': faq_sections})

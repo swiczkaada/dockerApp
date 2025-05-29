@@ -64,36 +64,37 @@ Installer la bibliotheque pour qrcode
 pip install qrcode[pil]
 ```
 
-
 Installer la bilbiotheque pour crypter les adresses ip :
 ```bash
 pip install cryptography
 ```
 
-
-Il faut pour relativedelta si tu ne l'as pas déjà.
+Il faut pour relativedelta  pour la date 
+```bash
 pip install python-dateutil
+```
 
-
-
+Installer Taillwind CSS : 
+```bash
 pip install django-tailwind==4.0.1
 python manage.py tailwind install
-
- python manage.py tailwind start
-
-
-Installer Django REST Framework (DRF) (pour exporter les donnes)
-```bash
-pip install djangorestframework
 ```
- pip install django-cors-headers
 
-npm install react-router-dom axios
-nvm install 20
-nvm use 20
- npm install
+Lancer la mise à jour automatique de Tailwind CSS : 
+```bash
+ python manage.py tailwind start
+```
 
-npm start
+Il faut pour relativedelta  pour la date 
+```bash
+pip install python-dateutil
+```
+
+Run le projet sans scanner les QR Codes
+ python manage.py runserver
+
+Run le projet avec scan des QR Codes 
+python manage.py runserver {ip}:8000
 
 
 https://www.youtube.com/watch?v=odIR-00ggVI
