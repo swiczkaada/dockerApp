@@ -46,7 +46,7 @@ def profile(request):
             messages.success(request, "Profil mis à jour avec succès.")
             return redirect('profile')
         else :
-            return render(request, 'accounts/profile.html')
+            return render(request, 'accounts/profile.html', context={'logs': recent_logs})
     else:
         return redirect('login')  # Redirect to login if not authenticated
 

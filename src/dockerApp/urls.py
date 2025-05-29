@@ -21,7 +21,7 @@ from django.views.defaults import server_error
 
 from accounts.views.profile import profile, search_users, delete_user_view, toggle_user_status, update_password
 from accounts.views.auth import signup, logout_user, login_user
-from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index, reload_qrcode_image
+from QRCode.views import qr_code, qr_code_detail, delete_qrcode, index, reload_qrcode_image, search_qrcodes
 from accounts.views.user_detail import user_detail_view, view_403
 from analytics.views import global_stats_view
 from  dockerApp import  settings
@@ -56,6 +56,7 @@ urlpatterns = [
 
     path('global/', global_stats_view, name='global_stats'),
 
+    path('search-qrcodes/', search_qrcodes, name='search_qrcodes'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

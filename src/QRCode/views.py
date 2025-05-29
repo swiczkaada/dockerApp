@@ -1,9 +1,13 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 import qrcode as qrcode_lib
 from django.core.files.base import ContentFile
 from io import BytesIO
+
+from django.views.decorators.http import require_GET
 
 from QRCode.decorators import qr_owner_or_admin_required
 from QRCode.models import QRCode
@@ -11,6 +15,7 @@ from QRCode.models import QRCode
 from django.utils.timezone import now
 from datetime import timedelta
 
+from accounts.decorators import admin_or_superadmin_required
 from activityLog.models import ActivityLog
 from dockerApp.settings import MEDIA_ROOT
 from tracking.models import Scan
@@ -19,6 +24,7 @@ import json
 from django.db.models.functions import ExtractHour
 import os
 import re
+from django.db.models import Q
 
 
 # Create your views here.
@@ -33,10 +39,32 @@ import re
     is_active = models.BooleanField(default=True)
 '''
 def index(request):
-    """
-    View function for the home page of the site.
-    """
-    return render(request, 'QRCode/index.html')
+    context = {}
+    if request.user.is_authenticated:
+        today = now().date()
+
+        if request.user.is_superuser or request.user.is_admin():
+            context['qrcodes'] = QRCode.objects.all().order_by('-created_at')[:5]
+            context['total_qrcodes_today'] = QRCode.objects.filter(created_at__date=today).count()
+            context['total_scans_today'] = Scan.objects.filter(timestamp__date=today).count()
+            context['logs'] = ActivityLog.objects.filter(
+                action_type__in=[
+                    'USER_CREATED', 'USER_DEACTIVATED',
+                    'USER_REACTIVATED', 'USER_DELETED'
+                ],
+                timestamp__date=today
+            ).order_by('-timestamp')
+            #context['latest_users'] = User.objects.order_by('-date_joined')[:5]
+            # ajouter un form pour chercher un qrcode
+
+
+        else:
+            # Utilisateur classique
+            context['my_qrcode_count'] = QRCode.objects.filter(user=request.user).count()
+            context['last_qrcode'] = QRCode.objects.filter(user=request.user).order_by('-created_at').first()
+            context['my_scans_today'] = Scan.objects.filter(qrcode__user=request.user, timestamp__date=today).count()
+
+    return render(request, 'QRCode/index.html', context)
 
 @login_required
 def qr_code(request):
@@ -216,3 +244,43 @@ def reload_qrcode_image(request, qrcode):
 
     return redirect('qr_code_detail', uuid=qrcode.uuid)
 
+
+
+
+@require_GET
+@admin_or_superadmin_required
+def search_qrcodes(request):
+    query = request.GET.get('query', '').strip()
+    search_type = request.GET.get('type', '').strip()
+    status = request.GET.get('status', 'all').strip()
+
+    if not query or not search_type:
+        return JsonResponse([], safe=False)
+
+    filters = Q()
+    if search_type == "uuid":
+        filters = Q(uuid__icontains=query)
+    elif search_type == "title":
+        filters = Q(title__icontains=query)
+    elif search_type == "url":
+        filters = Q(target_url__icontains=query)
+    else:
+        return JsonResponse([], safe=False)  # Critère non reconnu
+
+    if status == "active":
+        filters &= Q(is_active=True)
+    elif status == "inactive":
+        filters &= Q(is_active=False)
+
+    qrcodes = QRCode.objects.filter(filters)
+    results = [
+        {
+            'title': qr.title,
+            'target_url': qr.target_url,
+            'scan_count': qr.scan_count,
+            'uuid': str(qr.uuid),
+        }
+        for qr in qrcodes
+    ]
+
+    return JsonResponse(results, safe=False)
