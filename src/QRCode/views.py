@@ -1,54 +1,51 @@
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+import os
+import re
+import json
+from io import BytesIO
+from datetime import timedelta
+
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.utils import timezone
-from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.timezone import now
+from django.db.models import Count, Q
+from django.db.models.functions import ExtractHour
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.views.decorators.http import require_GET
+
 import qrcode as qrcode_lib
 from django.core.files.base import ContentFile
-from io import BytesIO
-
-from django.views.decorators.http import require_GET
 
 from QRCode.decorators import qr_owner_or_admin_required
 from QRCode.models import QRCode
-
-from django.utils.timezone import now
-from datetime import timedelta
-
-from accounts.decorators import admin_or_superadmin_required
 from activityLog.models import ActivityLog
-from dockerApp.settings import MEDIA_ROOT
 from tracking.models import Scan
-from django.db.models import Count
-import json
-from django.db.models.functions import ExtractHour
-import os
-import re
-from django.db.models import Q
+from accounts.decorators import admin_or_superadmin_required
+from dockerApp.settings import MEDIA_ROOT
 
+# Environment variables for dynamic URL building
 DOMAIN = os.environ.get('DOMAIN')
+DOMAIN_NGROK = os.environ.get('DOMAIN_NGROK')
 PORT = os.environ.get('PORT', '8000')  # Default to 8000 if PORT is not set
 PROTOCOL = os.environ.get('PROTOCOL', 'http')
+DOMAIN_PROD = os.environ.get('DOMAIN_PROD')
+PROTOCOL_PROD = os.environ.get('PROTOCOL_PROD')
 
 
-# Create your views here.
-'''
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField(max_length=150)
-    target_url = models.URLField(max_length=500)
-    uuid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
-    qr_image = models.ImageField(upload_to='qrcodes/', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
-'''
 def index(request):
+    """
+    Dashboard view:
+    - Shows recent QR codes, scans, and logs for admin users.
+    - Shows user's QR code stats for regular users.
+    """
     context = {}
-
     if request.user.is_authenticated:
         today = now().date()
 
         if request.user.is_superuser or request.user.is_admin():
+            # Admin dashboard data
             context['qrcodes'] = QRCode.objects.all().order_by('-created_at')[:5]
             context['total_qrcodes_today'] = QRCode.objects.filter(created_at__date=today).count()
             context['total_scans_today'] = Scan.objects.filter(timestamp__date=today).count()
@@ -59,10 +56,6 @@ def index(request):
                 ],
                 timestamp__date=today
             ).order_by('-timestamp')
-            #context['latest_users'] = User.objects.order_by('-date_joined')[:5]
-            # ajouter un form pour chercher un qrcode
-
-
         else:
             # Utilisateur classique
             context['my_qrcode_count'] = QRCode.objects.filter(user=request.user).count()
@@ -71,10 +64,14 @@ def index(request):
 
     return render(request, 'QRCode/index.html', context)
 
+
 @login_required
 def qr_code(request):
-
-    # Check if user use the form to generate a QR code
+    """
+    Handles QR code creation and listing for the logged-in user.
+    - POST: creates a new QR code.
+    - GET: lists all QR codes owned by the user.
+    """
     if request.method == 'POST':
         url = request.POST.get('target_url')
         title = request.POST.get('title')
@@ -87,20 +84,24 @@ def qr_code(request):
                 target_url=url,
                 is_active=True
             )
+            # Build the URL for the QR code
+            if DOMAIN_PROD :
+                qr_code_url = f'{PROTOCOL_PROD}://{DOMAIN_PROD}/access/{qr_code_obj.uuid}'
+            elif DOMAIN_NGROK :
+                qr_code_url = f'{PROTOCOL_PROD}://{DOMAIN_NGROK}/access/{qr_code_obj.uuid}'
+            else :
+                qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qr_code_obj.uuid}'
 
-            # Utilisation de l'IP ou du domaine pour générer l'URL du QR Code
-            qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qr_code_obj.uuid}'
-
-            # Génération de l'image du QR Code
+            # Generate QR code image
             img = qrcode_lib.make(qr_code_url)
             buffer = BytesIO()
             img.save(buffer, format="PNG")
 
-            # Sauvegarde dans ImageField
+            # Save ImageField
             filename = f"{qr_code_obj.uuid}.png"
             qr_code_obj.qr_image.save(filename, ContentFile(buffer.getvalue()), save=True)
 
-            #Regiter the log
+            # Log creation action
             ActivityLog.objects.create(
                 user=request.user,
                 action_type='QR_CREATED',
@@ -111,18 +112,19 @@ def qr_code(request):
 
     # Les qr codes de l'utilisateur connecté (id) user_id
 
+    # GET: List QR codes for the user
     qrcodes = QRCode.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'QRCode/qrcode.html' ,context={ 'qrcodes': qrcodes} )
 
-#Seul l'user de ce qr code peuvt acceder ou soit c'est un admin ou super admin
+
 
 @qr_owner_or_admin_required
 @login_required
 def qr_code_detail(request, qrcode):
-    #qrcode = get_object_or_404(QRCode, uuid=uuid)
-
-
-    # Update QR code via form
+    """
+     Shows details and statistics for a single QR code.
+     Allows updating the QR code on POST request.
+     """
     if request.method == 'POST':
         url = request.POST.get('target_url')
         title = request.POST.get('title')
@@ -134,8 +136,13 @@ def qr_code_detail(request, qrcode):
             qrcode.is_active = is_active
             qrcode.updated_at = now()
 
-            # Utilisation de l'IP ou du domaine pour générer l'URL du QR Code
-            qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qrcode.uuid}'
+            # Rebuild QR code URL
+            if DOMAIN_PROD :
+                qr_code_url = f'{PROTOCOL_PROD}://{DOMAIN_PROD}/access/{qrcode.uuid}'
+            elif DOMAIN_NGROK :
+                qr_code_url = f'{PROTOCOL_PROD}://{DOMAIN_NGROK}/access/{qrcode.uuid}'
+            else:
+                qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qrcode.uuid}'
 
             # Regenerate QR code image
             img = qrcode_lib.make(qr_code_url)
@@ -145,7 +152,8 @@ def qr_code_detail(request, qrcode):
             qrcode.qr_image.save(filename, ContentFile(buffer.getvalue()), save=False)
 
             qrcode.save()
-            # Register the log
+
+            # Log update action
             ActivityLog.objects.create(
                 user=request.user,
                 action_type='QR_UPDATED',
@@ -154,7 +162,7 @@ def qr_code_detail(request, qrcode):
             )
             return redirect('qr_code_detail', uuid=qrcode.uuid)
 
-    # Stats - Scans sur les 7 derniers jours
+    # Calculate stats for last 7 days scans
     today = now().date()
     last_7_days = today - timedelta(days=6)
 
@@ -174,7 +182,7 @@ def qr_code_detail(request, qrcode):
         labels.append(day)
         data.append(scans_dict.get(day, 0))
 
-    # Stats - Scans par heure
+    # Calculate hourly scan stats
     scans_by_hour_qs = (
         Scan.objects.filter(qrcode=qrcode)
         .annotate(hour=ExtractHour('timestamp'))
@@ -182,28 +190,33 @@ def qr_code_detail(request, qrcode):
         .annotate(total=Count('id'))
         .order_by('hour')
     )
-
     hour_dict = {entry['hour']: entry['total'] for entry in scans_by_hour_qs}
     hour_labels = list(range(24))
     hour_data = [hour_dict.get(h, 0) for h in hour_labels]
 
+    chart_data = {
+        "labels": labels,
+        "data": data,
+        "hour_labels": hour_labels,
+        "hour_data": hour_data
+    }
     return render(request, 'QRCode/detail.html', {
         'qrcode': qrcode,
-        'labels': json.dumps(labels),
-        'data': json.dumps(data),
-        'hour_labels': json.dumps(hour_labels),
-        'hour_data': json.dumps(hour_data),
+        "chart_data": chart_data
     })
+
 
 @qr_owner_or_admin_required
 @login_required
 def delete_qrcode(request,qrcode):
-    #qrcode = get_object_or_404(QRCode, uuid=uuid)
+    """
+    Deletes a QR code and its associated image files.
+    Logs the deletion action.
+    """
+    # Directory where QR code images are stored
+    qr_dir = os.path.join(MEDIA_ROOT, 'qrcodes') # adjust if stored elsewhere
 
-    # Dossier où les images QR sont stockées
-    qr_dir = os.path.join(MEDIA_ROOT, 'qrcodes')  # adapte si tu stockes ailleurs
-
-    # Pattern strict : commence par uuid, suivi de _optionnel ou rien, puis .png
+    # Strict pattern: starts with the UUID, optionally followed by an underscore and some characters, then ends with .png
     pattern = re.compile(rf"^{re.escape(str(qrcode.uuid))}(_[^/\\]+)?\.png$")
 
     if os.path.exists(qr_dir):
@@ -212,33 +225,39 @@ def delete_qrcode(request,qrcode):
                 file_path = os.path.join(qr_dir, filename)
                 try:
                     os.remove(file_path)
-                    print(f"Deleted file: {file_path}")
                 except Exception as e:
                     print(f"Failed to delete {file_path}: {e}")
 
     if qrcode:
         qrcode.delete()
-        # Register the log
+
         ActivityLog.objects.create(
             user=request.user,
             action_type='QR_DELETED',
             description=f"QR Code effacé : {qrcode.title}",
             url=qrcode.target_url
         )
-        print("QR Code deleted successfully.")
+        #print("QR Code deleted successfully.")
 
     return redirect('qr_code')
+
 
 @qr_owner_or_admin_required
 @login_required
 def reload_qrcode_image(request, qrcode):
-    #qrcode = get_object_or_404(QRCode, uuid=uuid)
-
+    """
+    Regenerates the QR code image from the current target_url.
+    Updates timestamp and saves the new image.
+    """
     if qrcode.target_url:
-        # Utilisation de l'IP ou du domaine pour générer l'URL du QR Code
-        qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qrcode.uuid}'
+        if DOMAIN_PROD:
+            qr_code_url = f'{PROTOCOL_PROD}://{DOMAIN_PROD}/access/{qrcode.uuid}'
+        elif DOMAIN_NGROK:
+            qr_code_url = f'{PROTOCOL_PROD}://{DOMAIN_NGROK}/access/{qrcode.uuid}'
+        else:
+            qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qrcode.uuid}'
 
-        # Générer une nouvelle image QR Code
+        # Regenerate QR code image
         img = qrcode_lib.make(qr_code_url)
         buffer = BytesIO()
         img.save(buffer, format="PNG")
@@ -250,11 +269,14 @@ def reload_qrcode_image(request, qrcode):
     return redirect('qr_code_detail', uuid=qrcode.uuid)
 
 
-
-
 @require_GET
 @admin_or_superadmin_required
 def search_qrcodes(request):
+    """
+    AJAX endpoint for searching QR codes by uuid, title or url.
+    Supports filtering by status (active/inactive/all).
+    Returns JSON results.
+    """
     query = request.GET.get('query', '').strip()
     search_type = request.GET.get('type', '').strip()
     status = request.GET.get('status', 'all').strip()
@@ -262,6 +284,7 @@ def search_qrcodes(request):
     if not query or not search_type:
         return JsonResponse([], safe=False)
 
+    print()
     filters = Q()
     if search_type == "uuid":
         filters = Q(uuid__icontains=query)
@@ -270,7 +293,7 @@ def search_qrcodes(request):
     elif search_type == "url":
         filters = Q(target_url__icontains=query)
     else:
-        return JsonResponse([], safe=False)  # Critère non reconnu
+        return JsonResponse([], safe=False)   # Invalid search type
 
     if status == "active":
         filters &= Q(is_active=True)
@@ -284,6 +307,7 @@ def search_qrcodes(request):
             'target_url': qr.target_url,
             'scan_count': qr.scan_count,
             'uuid': str(qr.uuid),
+            'is_active': qr.is_active,
         }
         for qr in qrcodes
     ]

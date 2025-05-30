@@ -5,7 +5,6 @@ from dockerApp.settings import AUTH_USER_MODEL
 
 import uuid
 
-# Create your models here.
 
 class QRCode(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)

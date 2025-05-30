@@ -10,7 +10,7 @@ def qr_owner_or_admin_required(view_func):
         if qrcode.user != request.user and not (request.user.is_admin() or request.user.is_super_admin()):
             return redirect('qr_code')  # ou HttpResponseForbidden
 
-        # Injecter l’objet qrcode dans la vue si besoin
+
         return view_func(request, qrcode, *args, **kwargs)
 
     return _wrapped_view
