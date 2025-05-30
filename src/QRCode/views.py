@@ -213,20 +213,8 @@ def delete_qrcode(request,qrcode):
     Deletes a QR code and its associated image files.
     Logs the deletion action.
     """
-    # Directory where QR code images are stored
-    qr_dir = os.path.join(MEDIA_ROOT, 'qrcodes') # adjust if stored elsewhere
 
-    # Strict pattern: starts with the UUID, optionally followed by an underscore and some characters, then ends with .png
-    pattern = re.compile(rf"^{re.escape(str(qrcode.uuid))}(_[^/\\]+)?\.png$")
-
-    if os.path.exists(qr_dir):
-        for filename in os.listdir(qr_dir):
-            if pattern.match(filename):
-                file_path = os.path.join(qr_dir, filename)
-                try:
-                    os.remove(file_path)
-                except Exception as e:
-                    print(f"Failed to delete {file_path}: {e}")
+    delete_qrcode_file(qrcode)
 
     if qrcode:
         qrcode.delete()
@@ -241,6 +229,24 @@ def delete_qrcode(request,qrcode):
 
     return redirect('qr_code')
 
+def delete_qrcode_file(qrcode):
+    """
+    Deletes files linked to a QRCode
+    """
+    # Directory where QR code images are stored
+    qr_dir = os.path.join(MEDIA_ROOT, 'qrcodes') # adjust if stored elsewhere
+
+    # Strict pattern: starts with the UUID, optionally followed by an underscore and some characters, then ends with .png
+    pattern = re.compile(rf"^{re.escape(str(qrcode.uuid))}(_[^/\\]+)?\.png$")
+
+    if os.path.exists(qr_dir):
+        for filename in os.listdir(qr_dir):
+            if pattern.match(filename):
+                file_path = os.path.join(qr_dir, filename)
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    print(f"Failed to delete {file_path}: {e}")
 
 @qr_owner_or_admin_required
 @login_required

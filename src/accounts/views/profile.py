@@ -1,4 +1,6 @@
 import json
+
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.decorators import login_required
@@ -9,9 +11,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from QRCode.views import delete_qrcode, delete_qrcode_file
 from accounts.decorators import admin_or_superadmin_required
 from accounts.models import CustomUser
 from activityLog.models import ActivityLog
+from QRCode.models import QRCode
 
 User = get_user_model()
 @login_required()
@@ -95,6 +99,11 @@ def delete_user_view(request):
         return JsonResponse({'error': 'Données JSON invalides.'}, status=400)
 
     user_to_delete = get_object_or_404(User, email=email)
+
+    # Delete all user QR codes with images
+    qrcodes = QRCode.objects.filter(user=user_to_delete)
+    for qrcode in qrcodes:
+        delete_qrcode_file(qrcode)
 
     try:
         User.objects.delete_user(user_to_delete)
@@ -219,3 +228,5 @@ def faq(request):
         ]
     }
     return render(request, 'accounts/faq.html', context={'faq_sections': faq_sections})
+
+
