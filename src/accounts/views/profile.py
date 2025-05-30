@@ -1,13 +1,13 @@
+import json
+from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.contrib import messages
-import json
 
 from accounts.decorators import admin_or_superadmin_required
 from accounts.models import CustomUser
@@ -17,11 +17,12 @@ User = get_user_model()
 @login_required()
 def profile(request):
     """
-    Handles the profile view for the user.
+    Handles the profile view for the logged-in user.
+    Allows updating user info and viewing recent activity logs.
     """
     if request.user.is_authenticated:
 
-        # Seulement les 20 derniers logs d'activité de l'utilisateur
+        # Only the last 20 user activity logs
         recent_logs = ActivityLog.objects.filter(user=request.user).order_by('-timestamp')[:20]
 
         # If the request method is POST, update the user's profile
@@ -32,13 +33,13 @@ def profile(request):
             user.first_name = request.POST.get('first_name')
             user.last_name = request.POST.get('last_name')
 
-            #Check if the user is trying to change their username to one that already exists
+            # Check if the user is trying to change their username to one that already exists
             if CustomUser.objects.filter(username=user.username).exclude(id=user.id).exists():
                 messages.error(request, "Ce nom d'utilisateur est déjà pris.")
                 return redirect('profile')
 
             user.save()
-            # Register the log
+            # Log the update
             ActivityLog.objects.create(
                 user=user,
                 action_type='USER_UPDATED',
@@ -51,14 +52,15 @@ def profile(request):
     else:
         return redirect('login')  # Redirect to login if not authenticated
 
-@login_required
+@admin_or_superadmin_required
 def search_users(request):
-    if not (request.user.is_authenticated and (request.user.is_admin() or request.user.is_super_admin())):
-        return JsonResponse({'results': []}, status=403)
-
+    """
+    Search users (excluding admins, superadmins, and the current user).
+    Only accessible to admin and superadmin users.
+    """
     query = request.GET.get('q', '')
     page = int(request.GET.get('page', 1))
-    #Exclude the current user, admin and superuser on the search results,
+    # Exclude the current user, admin and superuser on the search results,
     users_qs = User.objects.exclude(id=request.user.id).exclude(permission__in=[2, 3]).order_by('-date_joined')
     if query:
         users_qs = users_qs.filter(Q(username__istartswith=query) | Q(email__istartswith=query))
@@ -79,11 +81,11 @@ def search_users(request):
 
 @csrf_exempt  # Allow CSRF exemption for this view (Ajax requests)
 @require_POST
-@login_required
+@admin_or_superadmin_required
 def delete_user_view(request):
-    if not (request.user.is_admin() or request.user.is_super_admin()):
-        return JsonResponse({'error': 'Permission refusée.'}, status=403)
-
+    """
+    Deletes a user based on email, only accessible to admins/superadmins.
+    """
     try:
         data = json.loads(request.body)
         email = data.get('email')
@@ -96,7 +98,7 @@ def delete_user_view(request):
 
     try:
         User.objects.delete_user(user_to_delete)
-        # Register the log
+        # Log the delete
         ActivityLog.objects.create(
             user=request.user,
             action_type='USER_DELETED',
@@ -107,10 +109,14 @@ def delete_user_view(request):
 
     return JsonResponse({'success': "Utilisateur supprimé avec succès."})
 
-@login_required
+@admin_or_superadmin_required
 @require_POST
 @csrf_exempt
 def toggle_user_status(request):
+    """
+    Toggle user activation status (active/inactive).
+    Only available to authorized users.
+    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -135,6 +141,10 @@ def toggle_user_status(request):
 
 @login_required
 def update_password(request):
+    """
+    Allows a user to update their password.
+    Logs the change and logs them out after update.
+    """
     if request.method == 'POST':
         user = request.user
         new_password = request.POST.get('new_password')
@@ -142,19 +152,18 @@ def update_password(request):
 
         if new_password:
             if new_password != confirm_new_password:
-                return render(request, 'accounts/update_password.html', {
-                    'errors': ["Les mots de passe ne correspondent pas."],
-                })
+                messages.error(request, "Les mots de passe ne correspondent pas.")
+                return redirect("update_password")
 
             if user.check_password(new_password):
-                return render(request, 'accounts/update_password.html', {
-                    'errors': ["Le nouveau mot de passe ne peut pas être identique à l'ancien."],
-                })
+                messages.error(request, "Le nouveau mot de passe ne peut pas être identique à l'ancien.")
+                return redirect("update_password")
+
 
             user.set_password(new_password)
             user.save()
 
-            # Register the log
+            # Log the update
             ActivityLog.objects.create(
                 user=user,
                 action_type='USER_UPDATED',

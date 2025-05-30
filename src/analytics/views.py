@@ -1,17 +1,26 @@
-from django.shortcuts import render
+import json
+
+from datetime import timedelta
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
+from django.db.models.functions import TruncDay, TruncMonth, ExtractHour
+from django.shortcuts import render
+from django.utils.timezone import now
+from dateutil.relativedelta import relativedelta
+
 from tracking.models import Scan
 from QRCode.models import QRCode
-from django.db.models import Count
-from django.utils.timezone import now
-from datetime import timedelta
-from django.db.models.functions import TruncDay, TruncMonth, ExtractHour
-import json
+
 
 @login_required
 def global_stats_view(request):
+    """
+    Renders a global dashboard view with analytics data for QR code scans.
+    Superusers see all data, regular users see only their own.
+    """
     user = request.user
 
+    # Fetch QR codes and scans based on user permissions
     if user.is_superuser:
         scans = Scan.objects.all()
         qrcodes = QRCode.objects.all()
@@ -22,47 +31,49 @@ def global_stats_view(request):
     total_qrcodes = qrcodes.count()
     total_scans = scans.count()
 
-    # --------- Scans par jour sur 30 jours ---------
-    last_30_days = now().date() - timedelta(days=29)
-    scans_30_days_qs = (
+    # === [1] Scans per day (last 30 days) ===
+    days_range = 30
+    last_30_days = now().date() - timedelta(days=days_range - 1)
+    daily_scans_qs = (
         scans.filter(timestamp__date__gte=last_30_days)
         .annotate(day=TruncDay('timestamp'))
         .values('day')
         .annotate(total=Count('id'))
         .order_by('day')
     )
-    scans_30_days_dict = {entry['day'].date().isoformat(): entry['total'] for entry in scans_30_days_qs}
+    # Map results to dictionary {YYYY-MM-DD: count}
+    scans_by_day = {entry['day'].date().isoformat(): entry['total'] for entry in daily_scans_qs}
 
     labels_30_days = []
     data_30_days = []
-    for i in range(30):
+    for i in range(days_range):
         day = (last_30_days + timedelta(days=i)).isoformat()
         labels_30_days.append(day)
-        data_30_days.append(scans_30_days_dict.get(day, 0))
+        data_30_days.append(scans_by_day.get(day, 0))
 
-    # --------- Scans par mois sur 6 derniers mois ---------
-    last_6_months_date = now().date().replace(day=1) - timedelta(days=180)  # approx 6 mois avant
-    scans_6_months_qs = (
-        scans.filter(timestamp__date__gte=last_6_months_date)
+    # === [2] Scans per month (last 6 months) ===
+    months_range = 6
+    start_month = now().date().replace(day=1) - relativedelta(months=months_range - 1)
+    monthly_scans_qs = (
+        scans.filter(timestamp__date__gte=start_month)
         .annotate(month=TruncMonth('timestamp'))
         .values('month')
         .annotate(total=Count('id'))
         .order_by('month')
     )
-    scans_6_months_dict = {entry['month'].date().strftime('%Y-%m'): entry['total'] for entry in scans_6_months_qs}
+    scans_by_month = {entry['month'].date().strftime('%Y-%m'): entry['total'] for entry in monthly_scans_qs}
 
-    # Générer labels mois en format YYYY-MM sur 6 mois
-    from dateutil.relativedelta import relativedelta
+    # Generate month labels in YYYY-MM format over 6 months
     labels_6_months = []
     data_6_months = []
-    current_month = now().date().replace(day=1) - relativedelta(months=5)
-    for _ in range(6):
+    current_month = start_month
+    for _ in range(months_range):
         label = current_month.strftime('%Y-%m')
         labels_6_months.append(label)
-        data_6_months.append(scans_6_months_dict.get(label, 0))
+        data_6_months.append(scans_by_month.get(label, 0))
         current_month += relativedelta(months=1)
 
-    # --------- Top 5 QR codes les plus scannés ---------
+    # === [3] Top 5 most scanned QR codes ===
     top_qrcodes_qs = (
         qrcodes.annotate(scan_count=Count('scans'))
         .order_by('-scan_count')[:5]
@@ -71,44 +82,48 @@ def global_stats_view(request):
     top_qrcodes_labels = [entry['title'] for entry in top_qrcodes_qs]
     top_qrcodes_data = [entry['scan_count'] for entry in top_qrcodes_qs]
 
-    # --------- Moyenne quotidienne des scans sur la période de 30 jours ---------
+    # === [4] Daily average over the last 30 days ===
     days_observed = 30
     avg_daily_scans = sum(data_30_days) / days_observed if days_observed > 0 else 0
 
-    # --------- Distribution par heure de la journée (0-23h) ---------
-    scans_by_hour_qs = (
+    # === [5] Scan distribution by hour of the day (0–23) ===
+    hourly_scans_qs = (
         scans
         .annotate(hour=ExtractHour('timestamp'))
         .values('hour')
         .annotate(total=Count('id'))
         .order_by('hour')
     )
-    scans_by_hour_dict = {entry['hour']: entry['total'] for entry in scans_by_hour_qs}
+    scans_by_hour = {entry['hour']: entry['total'] for entry in hourly_scans_qs}
     hours_labels = list(range(24))
-    scans_by_hour_data = [scans_by_hour_dict.get(h, 0) for h in hours_labels]
+    scans_by_hour_data = [scans_by_hour.get(h, 0) for h in hours_labels]
 
-    # --------- QR codes actifs vs inactifs ---------
+    # === [6] Active vs inactive QR codes ===
     active_count = qrcodes.filter(is_active=True).count()
     inactive_count = qrcodes.filter(is_active=False).count()
 
+    chart_data = {
+        "labels30Days": labels_30_days,
+        "data30Days": data_30_days,
+
+        'labels6Months': labels_6_months,
+        'data6Months': data_6_months,
+
+        'topQRCodesLabels': top_qrcodes_labels,
+        'topQRCodesData': top_qrcodes_data,
+
+        'hoursLabels': hours_labels,
+        'scansByHourData': scans_by_hour_data,
+
+        'activeCount': active_count,
+        'inactiveCount': inactive_count,
+    }
     return render(request, 'analytics/global_stats.html', {
-        'total_qrcodes': total_qrcodes,
-        'total_scans': total_scans,
-
-        'labels_30_days': json.dumps(labels_30_days),
-        'data_30_days': json.dumps(data_30_days),
-
-        'labels_6_months': json.dumps(labels_6_months),
-        'data_6_months': json.dumps(data_6_months),
-
-        'top_qrcodes_labels': json.dumps(top_qrcodes_labels),
-        'top_qrcodes_data': json.dumps(top_qrcodes_data),
-
-        'avg_daily_scans': avg_daily_scans,
-
-        'hours_labels': json.dumps(hours_labels),
-        'scans_by_hour_data': json.dumps(scans_by_hour_data),
-
-        'active_count': active_count,
-        'inactive_count': inactive_count,
+        "chart_data": chart_data,
+        "total_qrcodes": total_qrcodes,
+        "total_scans": total_scans,
+        "avg_daily_scans": avg_daily_scans,
     })
+
+
+
