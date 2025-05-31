@@ -102,7 +102,7 @@ def global_stats_view(request):
     active_count = qrcodes.filter(is_active=True).count()
     inactive_count = qrcodes.filter(is_active=False).count()
 
-    # === [7] Top 5 villes les plus scannées ===
+    # === [7] Top 5 most scanned cities ===
     top_cities_qs = (
         scans
         .filter(geo_city__isnull=False)
@@ -115,8 +115,7 @@ def global_stats_view(request):
     top_cities_labels = [entry['geo_city'] for entry in top_cities_qs]
     top_cities_data = [entry['scan_count'] for entry in top_cities_qs]
 
-    # === [8] Scans par zone Île-de-France ===
-    # On suppose que geo_region est défini et que la région Île-de-France s'appelle "Île-de-France" ou "Ile-de-France"
+    # === [8] Scans by zone Île-de-France ===
     idf_scans_qs = (
         scans
         .filter(geo_region__isnull=False)
@@ -128,16 +127,15 @@ def global_stats_view(request):
         .annotate(scan_count=Count('id'))
     )
 
-    # Préparer un dict {ville: total}
     idf_city_scans = {}
     for entry in idf_scans_qs:
         city = entry['geo_city'] or 'Inconnu'
         idf_city_scans[city] = idf_city_scans.get(city, 0) + entry['scan_count']
 
-    idf_cities = list(idf_city_scans.keys())
-    idf_scans = list(idf_city_scans.values())
+    idf_cities_labels = list(idf_city_scans.keys())
+    idf_scans_data = list(idf_city_scans.values())
 
-    # === [9] Scans par région France entière ===
+    # === [9] Scans by region France ===
     france_region_scans_qs = (
         scans
         .filter(geo_region__isnull=False)
@@ -150,7 +148,7 @@ def global_stats_view(request):
     france_regions_labels = [entry['geo_region'] for entry in france_region_scans_qs]
     france_regions_data = [entry['scan_count'] for entry in france_region_scans_qs]
 
-    # === [10] GeoJSON data pour carte de chaleur (France uniquement) ===
+    # === [10] GeoJSON data for heat maps (France only) ===
     heatmap_points = []
     for scan in scans:
         if scan.geo_latitude and scan.geo_longitude:
@@ -158,7 +156,6 @@ def global_stats_view(request):
                 lat = float(scan.geo_latitude)
                 lng = float(scan.geo_longitude)
 
-                # Optionnel : filtrer uniquement les scans en France (si tu as un champ pays ou région)
                 if scan.geo_country and scan.geo_country.lower() != 'france':
                     continue
 
@@ -185,8 +182,8 @@ def global_stats_view(request):
         'topCitiesLabels': top_cities_labels,
         'topCitiesData': top_cities_data,
 
-        'idfCitiesLabels': idf_cities,
-        'idfCitiesData': idf_scans,
+        'idfCitiesLabels': idf_cities_labels,
+        'idfCitiesData': idf_scans_data,
 
         'franceRegionsLabels': france_regions_labels,
         'franceRegionsData': france_regions_data,
