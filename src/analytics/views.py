@@ -79,7 +79,7 @@ def global_stats_view(request):
         .order_by('-scan_count')[:5]
         .values('title', 'scan_count')
     )
-    top_qrcodes_labels = [entry['title'] for entry in top_qrcodes_qs]
+    top_qrcodes_labels = [entry['title'][:10] for entry in top_qrcodes_qs]
     top_qrcodes_data = [entry['scan_count'] for entry in top_qrcodes_qs]
 
     # === [4] Daily average over the last 30 days ===
@@ -102,6 +102,70 @@ def global_stats_view(request):
     active_count = qrcodes.filter(is_active=True).count()
     inactive_count = qrcodes.filter(is_active=False).count()
 
+    # === [7] Top 5 villes les plus scannées ===
+    top_cities_qs = (
+        scans
+        .filter(geo_city__isnull=False)
+        .exclude(geo_city='')
+        .values('geo_city')
+        .annotate(scan_count=Count('id'))
+        .order_by('-scan_count')[:5]
+    )
+
+    top_cities_labels = [entry['geo_city'] for entry in top_cities_qs]
+    top_cities_data = [entry['scan_count'] for entry in top_cities_qs]
+
+    # === [8] Scans par zone Île-de-France ===
+    # On suppose que geo_region est défini et que la région Île-de-France s'appelle "Île-de-France" ou "Ile-de-France"
+    idf_scans_qs = (
+        scans
+        .filter(geo_region__isnull=False)
+        .exclude(geo_region='')
+        .filter(geo_region__icontains="Île-de-France")
+        .filter(geo_city__isnull=False)
+        .exclude(geo_city='')
+        .values('geo_city')
+        .annotate(scan_count=Count('id'))
+    )
+
+    # Préparer un dict {ville: total}
+    idf_city_scans = {}
+    for entry in idf_scans_qs:
+        city = entry['geo_city'] or 'Inconnu'
+        idf_city_scans[city] = idf_city_scans.get(city, 0) + entry['scan_count']
+
+    idf_cities = list(idf_city_scans.keys())
+    idf_scans = list(idf_city_scans.values())
+
+    # === [9] Scans par région France entière ===
+    france_region_scans_qs = (
+        scans
+        .filter(geo_region__isnull=False)
+        .exclude(geo_region='')
+        .values('geo_region')
+        .annotate(scan_count=Count('id'))
+        .order_by('-scan_count')
+    )
+
+    france_regions_labels = [entry['geo_region'] for entry in france_region_scans_qs]
+    france_regions_data = [entry['scan_count'] for entry in france_region_scans_qs]
+
+    # === [10] GeoJSON data pour carte de chaleur (France uniquement) ===
+    heatmap_points = []
+    for scan in scans:
+        if scan.geo_latitude and scan.geo_longitude:
+            try:
+                lat = float(scan.geo_latitude)
+                lng = float(scan.geo_longitude)
+
+                # Optionnel : filtrer uniquement les scans en France (si tu as un champ pays ou région)
+                if scan.geo_country and scan.geo_country.lower() != 'france':
+                    continue
+
+                heatmap_points.append([lat, lng])
+            except (TypeError, ValueError):
+                continue
+
     chart_data = {
         "labels30Days": labels_30_days,
         "data30Days": data_30_days,
@@ -117,6 +181,17 @@ def global_stats_view(request):
 
         'activeCount': active_count,
         'inactiveCount': inactive_count,
+
+        'topCitiesLabels': top_cities_labels,
+        'topCitiesData': top_cities_data,
+
+        'idfCitiesLabels': idf_cities,
+        'idfCitiesData': idf_scans,
+
+        'franceRegionsLabels': france_regions_labels,
+        'franceRegionsData': france_regions_data,
+
+        'heatmapPoints':heatmap_points,
     }
     return render(request, 'analytics/global_stats.html', {
         "chart_data": chart_data,

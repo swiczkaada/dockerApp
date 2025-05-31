@@ -28,11 +28,12 @@ document.addEventListener('DOMContentLoaded', function () {
             container.className = 'flex flex-col md:flex-row md:items-center md:justify-between gap-2';
 
             const left = document.createElement('div');
-            left.className = 'flex flex-col space-y-1 md:max-w-md';
+            left.className = 'flex flex-col space-y-1 md:max-w-md min-w-0';
 
             const title = document.createElement('span');
-            title.className = 'text-lg font-semibold text-blue-900 hover:text-blue-600 transition';
+            title.className = 'text-lg font-semibold text-blue-900 hover:text-blue-600 transition truncate max-w-[250px] cursor-pointer';
             title.textContent = qrcode.title || 'Sans titre';
+            title.title = qrcode.title || 'Sans titre';
             title.addEventListener('click', () => {
               window.location.href = 'qrcode/' + qrcode.uuid;
             });
@@ -40,7 +41,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const url = document.createElement('a');
             url.href = qrcode.target_url;
             url.textContent = qrcode.target_url;
-            url.className = 'text-sm text-blue-600 hover:underline break-words';
+            url.title = qrcode.target_url;
+            url.className = 'text-sm text-blue-600 hover:underline truncate max-w-[250px] block';
             url.target = '_blank';
 
             left.appendChild(title);

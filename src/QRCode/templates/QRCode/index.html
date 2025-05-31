@@ -59,19 +59,19 @@
             <h2 class="text-2xl font-semibold text-gray-800 mb-6">QR Codes créés récemment</h2>
             {% if qrcodes %}
               <div class="max-h-96 overflow-y-auto divide-y divide-gray-200 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-100">
-                <table class="min-w-full text-sm text-left">
+                <table class="min-w-full text-sm text-left table-fixed" >
                   <thead class="bg-gray-50">
                     <tr>
                       <th class="px-4 py-3">QR</th>
-                      <th class="px-4 py-3">Titre</th>
-                      <th class="px-4 py-3">URL</th>
+                      <th class="px-4 py-3 truncate">Titre</th>
+                      <th class="px-4 py-3 truncate">URL</th>
                       <th class="px-4 py-3 text-center">Scans</th>
                       <th class="px-4 py-3 text-center">Statut</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for qrcode in qrcodes %}
-                      <tr class="hover:bg-gray-50">
+                      <tr class="hover:bg-gray-50 min-w-0">
                         <td class="px-4 py-3">
                           {% if qrcode.qr_image %}
                             <img src="{{ qrcode.qr_image.url }}" alt="QR" class="w-10 h-10 object-contain rounded shadow">
@@ -79,8 +79,8 @@
                             <span class="text-gray-400 italic">N/A</span>
                           {% endif %}
                         </td>
-                        <td class="px-4 py-3">{{ qrcode.title }}</td>
-                        <td class="px-4 py-3 text-blue-600 break-all"><a href="{{ qrcode.target_url }}" target="_blank">{{ qrcode.target_url|truncatechars:40 }}</a></td>
+                        <td class="px-4 py-3 truncate max-w-full">{{ qrcode.title }}</td>
+                        <td class="px-4 py-3 text-blue-600 break-all truncate max-w-full"><a href="{{ qrcode.target_url }}" target="_blank">{{ qrcode.target_url|truncatechars:40 }}</a></td>
                         <td class="px-4 py-3 text-center">{{ qrcode.scan_count }}</td>
                         <td class="px-4 py-3 text-center">
                           {% if qrcode.is_active %}

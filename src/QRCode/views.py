@@ -76,8 +76,8 @@ def qr_code(request):
         url = request.POST.get('target_url')
         title = request.POST.get('title')
 
-        if url and title:
-            print("Generating QR Code...")
+        if url and title and len(url)<=500 and len(title)<=150:
+            #print("Generating QR Code...")
             qr_code_obj = QRCode.objects.create(
                 user=request.user,
                 title=title,
@@ -130,7 +130,7 @@ def qr_code_detail(request, qrcode):
         title = request.POST.get('title')
         is_active = request.POST.get('is_active') == 'on'
 
-        if url and title:
+        if url and title and len(url)<=500 and len(title)<=150:
             qrcode.target_url = url
             qrcode.title = title
             qrcode.is_active = is_active
@@ -215,7 +215,6 @@ def delete_qrcode(request,qrcode):
     """
 
     delete_qrcode_file(qrcode)
-
     if qrcode:
         qrcode.delete()
 
@@ -262,7 +261,6 @@ def reload_qrcode_image(request, qrcode):
             qr_code_url = f'{PROTOCOL_PROD}://{DOMAIN_NGROK}/access/{qrcode.uuid}'
         else:
             qr_code_url = f'{PROTOCOL}://{DOMAIN}:{PORT}/access/{qrcode.uuid}'
-
         # Regenerate QR code image
         img = qrcode_lib.make(qr_code_url)
         buffer = BytesIO()

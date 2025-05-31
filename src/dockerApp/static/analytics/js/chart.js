@@ -2,7 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const rawData = document.getElementById('chart-data');
   if (!rawData) return;
 
-  const { labels30Days, data30Days, labels6Months, data6Months, topQRCodesLabels, topQRCodesData, hoursLabels, scansByHourData, activeCount, inactiveCount } = JSON.parse(rawData.textContent);
+  const { labels30Days, data30Days, labels6Months, data6Months, topQRCodesLabels, topQRCodesData, hoursLabels, scansByHourData,
+    activeCount, inactiveCount, topCitiesLabels, topCitiesData, idfCitiesLabels, idfCitiesData, franceRegionsLabels, franceRegionsData } = JSON.parse(rawData.textContent);
 
   new Chart(document.getElementById('scansByDayChart').getContext('2d'), {
     type: 'bar',
@@ -101,4 +102,22 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   });
+
+  new Chart(document.getElementById('topCitiesChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: topCitiesLabels,
+      datasets: [{
+        label: 'Top 5 villes (scans)',
+        data: topCitiesData,
+        backgroundColor: 'rgba(255, 206, 86, 0.6)',
+        borderColor: 'rgba(255, 206, 86, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: { scales: { y: { beginAtZero: true } }, responsive: true }
+  });
+
+
+
 });

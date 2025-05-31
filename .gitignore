@@ -15,3 +15,6 @@ node_modules/
 
 # Ignorer explicitement la base de données dans data
 data/db.sqlite3
+
+# Ignore les images des QRCodes
+src/media/qrcodes/

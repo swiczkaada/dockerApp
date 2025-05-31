@@ -54,7 +54,7 @@ class Scan(models.Model):
             self.geo_longitude = geo_info.get("longitude")
             self.geo_timezone = geo_info.get("timezone")
 
-            # Chiffre l'adresse IP avant de stocké
+            # Encrypt the IP address before storing it
             self.ip_address = self.encrypt(raw_ip)
 
         if self.user_agent:
