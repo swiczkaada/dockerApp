@@ -40,59 +40,25 @@
     </div>
 
     <!-- Full width donut chart centered -->
-    <div class="bg-white p-6 rounded-lg shadow-lg col-span-full max-w-md mx-auto">
+    <div class="bg-white p-6 rounded-lg shadow-lg  max-w-md mx-auto">
       <h3 class="text-lg font-semibold mb-6 text-blue-800 text-center">QR Codes actifs vs inactifs</h3>
       <div class="flex justify-center">
         <canvas id="qrcodeActiveChart" class="w-64 h-64"></canvas>
       </div>
     </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <h3 class="text-lg font-semibold mb-4 text-blue-800 text-center">Top 5 des villes avec le plus de scans</h3>
+      <canvas id="topCitiesChart" class="w-64 h-64"></canvas>
+    </div>
   </div>
 
-  <div class="bg-white p-6 rounded-lg shadow-lg">
-    <h3 class="text-lg font-semibold mb-4 text-blue-800 text-center">Top 5 des villes avec le plus de scans</h3>
-    <canvas id="topCitiesChart" class="w-full h-72"></canvas>
-  </div>
 
-  <div class="mt-6">
-    <h2 class="text-xl font-semibold mb-2">Carte des scans (France)</h2>
-    <div id="heatmap" class="w-full h-[500px] rounded-lg shadow border"></div>
-  </div>
+
 
   <!-- Données JSON encodées par Django -->
   {{ chart_data|json_script:"chart-data" }}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{% static '/analytics/js/chart.js' %}"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
-
-  <script>
-    const chartData = {{ chart_data|safe }};
-
-    // Initialiser la carte centrée sur la France
-    const map = L.map('heatmap').setView([46.603354, 1.888334], 6);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Vérifier s’il y a des points à afficher
-    const points = chartData.heatmapPoints;
-    if (points.length > 0) {
-      const heat = L.heatLayer(points, {
-        radius: 35,        // Augmenter le rayon = plus visible à faible zoom
-        blur: 20,          // Douceur du flou
-        minOpacity: 0.3,   // Pour que ça reste visible même très dilué
-        gradient: {
-          0.2: 'blue',
-          0.4: 'lime',
-          0.6: 'orange',
-          0.8: 'red'
-        }
-      }).addTo(map);
-    } else {
-      console.log("Aucun scan géolocalisé à afficher.");
-    }
-  </script>
 
 {% endblock %}
