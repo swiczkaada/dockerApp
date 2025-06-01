@@ -147,6 +147,17 @@ cd ..
 docker compose down
 docker compose up -d
 ```
+
+### 10. **📦 Installer la base de données GeoLite2**
+Le fichier `GeoLite2-City.mmdb` est nécessaire pour les fonctionnalités de géolocalisation, mais il est trop volumineux pour être versionné dans le dépôt Git.
+
+Un fichier compressé `GeoLite2-City_20250528.tar.gz` est fourni séparément. Voici comment l’installer :
+```bash
+mkdir -p src/dockerApp/geoip && \
+tar -xvzf GeoLite2-City_20250528.tar.gz && \
+mv GeoLite2-City_20250528/GeoLite2-City.mmdb src/dockerApp/geoip/
+```
+
 ## Lancer le projet 
 
 Ouvrez votre navigateur et allez sur :
