@@ -7,34 +7,51 @@ Ce guide explique comment installer, configurer et lancer le projet.
 
 ## Prérequis
 
-- Python 3.10+ (ou version compatible)
-- pip
+- Docker  
+- Docker Compose
 - Git
-- (Optionnel) un environnement virtuel Python (`venv` recommandé)
+- (Optionnel) Ngrok
 
 ---
 
 ## Installation
 
-1. **Cloner le dépôt**
+### 1. **Cloner le dépôt**
 
 ```bash
-git clone https://github.com/ton-utilisateur/ton-projet.git
-cd ton-projet
+git clone https://github.com/swiczkaada/dockerApp.git
+cd dockerApp
 ```
 
-2. **Créer un environnement virtuel (optionnel mais recommandé)**
+### 2. **Démarrer les services Docker**
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # Sur Windows, utilisez `venv\Scripts\activate`
+docker compose up --build -d
 ```
 
-3. **Installer les dépendances**
+### 3. **Exécuter les migrations**
 
 ```bash
-pip install -r requirements.txt
+docker compose exec web python manage.py migrate
 ```
+
+### 4. **Créer un compte administrateur**
+
+C’est obligatoire pour se connecter à l’interface d’administration Django.
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+### 5. **Installer Tailwind CSS**
+
+L’interface utilise Tailwind pour le design. Vous devez l’installer et le démarrer :
+
+```bash
+docker compose exec web python manage.py tailwind install
+docker compose exec web python manage.py tailwind start
+```
+Laissez la commande **tailwind start tourner en parallèle (dans un second terminal par exemple)**, elle compile automatiquement le CSS.
 
 ## Configuration
 
@@ -44,13 +61,13 @@ Le projet utilise un fichier `.env` pour stocker les variables d'environnement s
 
 Un fichier `.env_example` est fourni pour vous guider dans la création de votre propre fichier `.env`.
 
-4. **Renommer le fichier `.env_example` en `.env`**
+### 6. **Renommer le fichier `.env_example` en `.env`**
 
 ```bash
 cd src/
 mv .env_example .env
 ```
-5. **Génération des clés**
+### 7. **Génération des clés**
 
 - Clé Fernet
 
@@ -66,19 +83,77 @@ python src/generate_secret_key.py
 ```
 Copiez la clé et mettez-la dans la variable DJANGO_SECRET_KEY de votre `.env`.
 
+### 8. **Utilisation réseau local ou via ngrok (important pour les QR codes)**
+
+Par défaut, les QR codes générés utiliseront localhost, ce qui ne fonctionnera pas sur un autre appareil que votre PC.
+
+Vous avez deux options :
+
+- **Option 1 – Utiliser votre adresse IP locale (sur le même réseau Wi-Fi)**
+
+a. Trouver Trouvez votre IP locale :
+
+Méthode 1 – Via le terminal :
+
+```bash
+# Sur Windows
+ipconfig
+
+# Sur Mac / Linux
+ifconfig
+```
+
+Méthode 2 – Via les paramètres Wi-Fi :
+
+- Allez dans les paramètres de votre Wi-Fi (ordinateur ou téléphone)
+
+- Cliquez sur le réseau Wi-Fi connecté
+
+- Recherchez la ligne "Adresse IP" ou "IPv4"
+Recherchez une adresse du type : 192.168.x.x ou 10.0.x.x
+
+b. Dans le fichier `.env`, décommentez, modifiez ou ajoutez ces lignes :
+
+```bash
+DOMAIN_IP=192.168.1.42 # Remplacez par votre IP
+PROTOCOL=http
+PORT=8000
+```
+Vous pourrez maintenant scanner les QR codes depuis votre téléphone sur le même réseau Wi-Fi.
+
+- **Option 2 – Utiliser Ngrok (accessible depuis Internet)**
+
+a. Installez ngrok : https://ngrok.com/download
+
+b. Lancez ngrok :
+```bash
+ngrok http 8000
+```
+Ngrok vous affichera une URL du type :
+
+```cpp
+https://3d07-xxxx.ngrok-free.app
+```
+
+c. Décommentez et modifiez le fichier .env :
+```
+DOMAIN_NGROK=3d07-xxxx.ngrok-free.app
+PROTOCOL_PROD=https
+```
+
+### 9. **Relancer Docker pour appliquer la configuration**
+```bash
+cd ..
+docker compose down
+docker compose up -d
+```
 ## Lancer le projet 
 
-6. **Lancer le serveur de développement (par défaut localhost:8000) **
+Ouvrez votre navigateur et allez sur :
 
-```bash
-python manage.py runserver
-```
+Application principale : http://localhost:8000
 
-7. **Pour accéder à l'application depuis un autre appareil, utilisez l'adresse IP locale de votre machine**
-
-```bash
-python manage.py runserver 0.0.0.0:8000 # Remplacer 0.0.0.0 par votre adresse ip 
-```
+Interface admin Django : http://localhost:8000/admin
 
 ## Commandes Django utiles
 **Pour installer Tailwind CSS et lancer sa compilation**
@@ -91,19 +166,35 @@ python manage.py tailwind start
 **Créer les fichiers de migration**
 
 ```bash
-python manage.py makemigrations
+docker compose exec web python manage.py makemigrations
 ```
 
 **Appliquer les migrations**
 
 ```bash
-python manage.py migrate
+docker compose exec web python manage.py migrate
 ```
 
 **Créer un super utilisateur**
 
 ```bash
-python manage.py createsuperuser
+docker compose exec web python manage.py createsuperuser
+```
+
+
+## 📂 Arborescence du projet (simplifiée)
+```csharp
+dockerApp/
+├── data/                   ← Contient la base SQLite (via Docker)
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+├── README.md
+├── src/                    ← Projet Django et apps
+│   ├── manage.py
+│   ├── dockerApp/
+│   ├── accounts/
+└──── ...
 ```
 
 

@@ -51,26 +51,6 @@ def scan_redirect(request,uuid_str):
 
     return redirect(qrcode.target_url)
 
-def test_geoip_view(request):
-    ip = request.GET.get('ip', '8.8.8.8')  # IP par défaut si pas précisée
 
-    try:
-        reader = geoip2.database.Reader(GEOIP_PATH + "/GeoLite2-City.mmdb")
-        response = reader.city(ip)
-        reader.close()
-
-        result = (
-            f"IP: {ip}<br>"
-            f"Country: {response.country.name}<br>"
-            f"City: {response.city.name}<br>"
-            f"Region: {response.subdivisions.most_specific.name}<br>"
-            f"Latitude: {response.location.latitude}<br>"
-            f"Longitude: {response.location.longitude}<br>"
-            f"Timezone: {response.location.time_zone}<br>"
-        )
-    except Exception as e:
-        result = f"Erreur GeoIP: {e}"
-
-    return HttpResponse(result)
 
 

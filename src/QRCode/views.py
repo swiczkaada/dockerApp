@@ -26,7 +26,7 @@ from accounts.decorators import admin_or_superadmin_required
 from dockerApp.settings import MEDIA_ROOT
 
 # Environment variables for dynamic URL building
-DOMAIN = os.environ.get('DOMAIN')
+DOMAIN = os.environ.get('DOMAIN_IP') or 'localhost'
 DOMAIN_NGROK = os.environ.get('DOMAIN_NGROK')
 PORT = os.environ.get('PORT', '8000')  # Default to 8000 if PORT is not set
 PROTOCOL = os.environ.get('PROTOCOL', 'http')

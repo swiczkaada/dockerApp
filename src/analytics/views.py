@@ -148,21 +148,6 @@ def global_stats_view(request):
     france_regions_labels = [entry['geo_region'] for entry in france_region_scans_qs]
     france_regions_data = [entry['scan_count'] for entry in france_region_scans_qs]
 
-    # === [10] GeoJSON data for heat maps (France only) ===
-    heatmap_points = []
-    for scan in scans:
-        if scan.geo_latitude and scan.geo_longitude:
-            try:
-                lat = float(scan.geo_latitude)
-                lng = float(scan.geo_longitude)
-
-                if scan.geo_country and scan.geo_country.lower() != 'france':
-                    continue
-
-                heatmap_points.append([lat, lng])
-            except (TypeError, ValueError):
-                continue
-
     chart_data = {
         "labels30Days": labels_30_days,
         "data30Days": data_30_days,
@@ -188,7 +173,6 @@ def global_stats_view(request):
         'franceRegionsLabels': france_regions_labels,
         'franceRegionsData': france_regions_data,
 
-        'heatmapPoints':heatmap_points,
     }
     return render(request, 'analytics/global_stats.html', {
         "chart_data": chart_data,

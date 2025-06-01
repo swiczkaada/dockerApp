@@ -28,10 +28,10 @@ FERNET_KEY = os.environ.get('DJANGO_FERNET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-DOMAIN = os.environ.get('DOMAIN')
+DOMAIN_IP = os.environ.get('DOMAIN_IP')
 DOMAIN_PROD = os.environ.get('DOMAIN_PROD')
 DOMAIN_NGROK = os.environ.get('DOMAIN_NGROK')
-ALLOWED_HOSTS = [DOMAIN, 'localhost', '127.0.0.1', DOMAIN_PROD, DOMAIN_NGROK]
+ALLOWED_HOSTS = [DOMAIN_IP, 'localhost', '127.0.0.1', DOMAIN_PROD, DOMAIN_NGROK]
 
 
 # Application definition
@@ -89,7 +89,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         #'NAME': BASE_DIR / 'db.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'data', 'db.sqlite3'),  # /app/data/db.sqlite3
+        'NAME': '/data/db.sqlite3',
     }
 }
 

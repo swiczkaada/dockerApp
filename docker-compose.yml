@@ -5,5 +5,5 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./src:/app       # monte uniquement src dans /app
-      - ./data:/app/data
+      - ./src:/app
+      - ./data:/data 

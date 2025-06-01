@@ -25,7 +25,7 @@ class Scan(models.Model):
     referrer = models.URLField(null=True, blank=True)
 
     # Décomposition de geo_data
-    geo_ip = models.GenericIPAddressField(null=True, blank=True)
+    #geo_ip = models.GenericIPAddressField(null=True, blank=True)
     geo_country = models.CharField(max_length=100, null=True, blank=True)
     geo_city = models.CharField(max_length=100, null=True, blank=True)
     geo_region = models.CharField(max_length=100, null=True, blank=True)
@@ -46,7 +46,7 @@ class Scan(models.Model):
         if raw_ip:
             geo_info = self.get_geo_info(raw_ip)
 
-            self.geo_ip = raw_ip
+            #self.geo_ip = raw_ip
             self.geo_country = geo_info.get("country")
             self.geo_city = geo_info.get("city")
             self.geo_region = geo_info.get("region")
@@ -64,11 +64,11 @@ class Scan(models.Model):
 
 
     def encrypt(self, data):
-        """Chiffrer les données"""
+        """Encrypt the given string data using Fernet encryption"""
         return self.fernet.encrypt(data.encode()).decode()
 
     def decrypt(self, data):
-        """Déchiffrer les données"""
+        """Encrypt the given string data using Fernet encryption"""
         return self.fernet.decrypt(data.encode()).decode()
 
     def get_geo_info(self, ip):

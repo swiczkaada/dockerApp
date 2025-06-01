@@ -20,6 +20,11 @@
                 {% if user.is_superuser %}
                     <a href="/admin/" class="hover:text-blue-300 transition">Admin</a>
                 {% endif %}
+                {% if user.is_super_admin or user.is_admin %}
+                    <a href="{% url 'signup' %}" class="bg-blue-700 hover:bg-blue-800 px-5 py-1 rounded transition inline-block">
+                        Inscription
+                    </a>
+                {% endif %}
                 <a href="{% url 'profile' %}" class="hover:text-blue-300 transition">Mon compte ({{ user.username }})</a>
                 <a href="{% url 'qr_code' %}" class="hover:text-blue-300 transition">Mes QR Codes</a>
                 <a href="{% url 'global_stats' %}" class="hover:text-blue-300 transition">Statistiques globales</a>
@@ -28,9 +33,6 @@
                 </a>
             {% else %}
                 <a href="{% url 'login' %}" class="hover:text-blue-300 transition">Se connecter</a>
-                <a href="{% url 'signup' %}" class="bg-blue-700 hover:bg-blue-800 px-5 py-1 rounded transition inline-block">
-                    S'inscrire
-                </a>
             {% endif %}
         </nav>
     </div>

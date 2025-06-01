@@ -2,7 +2,7 @@
 src/.env
 
 # Ignorer fichiers spécifiques
-src/dockerApp/geoip/GeoLite2-City.mmdb
+#src/dockerApp/geoip/GeoLite2-City.mmdb
 
 # Ignorer environnement virtuel Python local
 venv/

@@ -4,11 +4,12 @@ from django.contrib.auth import get_user_model, login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
+from accounts.decorators import admin_or_superadmin_required
 from activityLog.models import ActivityLog
 
 User = get_user_model()
-# Create your views here.
 
+@admin_or_superadmin_required
 def signup(request):
     """
     Handles user registration.

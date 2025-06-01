@@ -19,46 +19,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.defaults import server_error
 
-from accounts.views.profile import profile, search_users, delete_user_view, toggle_user_status, update_password, \
-    doc_admin, doc_user, faq
-from accounts.views.auth import signup, logout_user, login_user
 from QRCode.views import index
-from accounts.views.user_detail import user_detail_view, view_403
-from analytics.views import global_stats_view
 from  dockerApp import  settings
-from tracking.views import scan_redirect, test_geoip_view
 
 urlpatterns = [
-    path('admin/users/<str:username>/', user_detail_view, name='user_info'),
-
-    path('admin/', admin.site.urls),
-
-    path('500/', server_error),
-    path('403/', view_403, name='403'),
-
+    path('', include('accounts.urls')),
     path('', index, name='index'),
-    path('signup/', signup, name='signup'),
-    path('logout/', logout_user, name='logout'),
-    path('login/', login_user, name='login'),
-    path('update-password/', update_password, name='update_password'),
-
-    path('profile/', profile, name='profile'),
-
-    path('search-users/', search_users, name='search_users'),
-    path('delete-user/', delete_user_view, name='delete_user'),
-    path('toggle-user-status/', toggle_user_status, name='toggle-user-status'),
-
     path('qrcode/', include('QRCode.urls')),  # QRCode app URLs
-
-    path('access/<uuid:uuid_str>/', scan_redirect, name='scan-redirect'),
-
-    path('global/', global_stats_view, name='global_stats'),
-
-
-    path('doc-admin/', doc_admin, name='doc_admin'),
-    path('doc-user/', doc_user, name='doc_user'),
-    path('FaQ/', faq, name="faq"),
-    path('geo/', test_geoip_view, name='test_geoip'),
+    path('', include('tracking.urls')),
+    path('',include('analytics.urls')),
+    path('admin/', admin.site.urls),
+    path('500/', server_error),
 
 ]
 
