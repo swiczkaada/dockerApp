@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12">
+  <h1 class="text-4xl font-bold text-indigo-800 mb-12">Documentation complète de l'application</h1>
+
+  {% if user.is_admin or user.is_super_admin %}
+    <div class="mb-6">
+      <a href="{% url 'doc_admin' %}" class="px-4 py-2 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition duration-300 shadow-md inline-block">
+        Basculer vers la vue Administrateur
+      </a>
+    </div>
+  {% endif %}
+
+  <section class="space-y-20">
+
+    <!-- Page d'accueil utilisateur -->
+    <section>
+      <h2 class="text-3xl font-semibold text-indigo-700 mb-6">Page d'accueil</h2>
+      <p class="mb-4">La page d'accueil permet à l'utilisateur d'accéder rapidement à ses données récentes :</p>
+      <ul class="list-disc list-inside space-y-2 mb-6">
+        <li>QR Code le plus récent</li>
+        <li>Nombre de scans aujourd'hui</li>
+        <li>QR Codes créés aujourd'hui</li>
+      </ul>
+
+      <div class="pl-4 border-l-4 border-indigo-300">
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Dashboard utilisateur</h3>
+          <img src="/media/img/user_home_dashboard.png" alt="Dashboard utilisateur" class="rounded-lg shadow-lg max-h-[420px] max-w-4xl object-contain" />
+        </section>
+      </div>
+    </section>
+
+    <!-- Page Mon compte -->
+    <section>
+      <h2 class="text-3xl font-semibold text-indigo-700 mb-6">Page « Mon compte »</h2>
+      <p class="mb-4">La page profil contient plusieurs sections importantes :</p>
+
+      <div class="pl-4 border-l-4 border-indigo-300 space-y-10">
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Informations personnelles</h3>
+          <ul class="list-disc list-inside ml-6 space-y-2">
+            <li>Modifier prénom, nom, username</li>
+            <li>Lien vers changement de mot de passe</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Activité récente</h3>
+          <p>Liste des 20 dernières actions effectuées sur le compte.</p>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Aide et documentation</h3>
+          <p>Redirections vers la FAQ ou cette page de documentation.</p>
+          <img src="/media/img/user_profile_page.png" alt="Profil utilisateur" class="rounded-lg shadow-lg max-h-[400px] max-w-4xl object-contain" />
+        </section>
+      </div>
+    </section>
+
+    <!-- Page Mes QR Codes -->
+    <section>
+      <h2 class="text-3xl font-semibold text-indigo-700 mb-6">Page « Mes QR Codes »</h2>
+      <p class="mb-4">Cette page permet de gérer ses QR Codes personnels :</p>
+
+      <ul class="list-disc list-inside space-y-2 mb-6">
+        <li>Créer un nouveau QR Code</li>
+        <li>Voir la liste complète des QR Codes</li>
+        <li>Supprimer, modifier, régénérer un QR Code</li>
+        <li>Accéder aux statistiques détaillées d’un QR Code</li>
+      </ul>
+
+      <div class="pl-4 border-l-4 border-indigo-300 space-y-10">
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Liste des QR Codes</h3>
+          <img src="/media/img/user_qrcode_list.png" alt="Liste QR Codes" class="rounded-lg shadow-lg max-h-[400px] max-w-4xl object-contain" />
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Détail d'un QR Code</h3>
+          <img src="/media/img/user_qrcode_detail.png" alt="Détail d'un QR Code" class="rounded-lg shadow-lg max-h-[400px] max-w-4xl object-contain" />
+        </section>
+      </div>
+    </section>
+
+    <!-- Page Statistiques -->
+    <section>
+      <h2 class="text-3xl font-semibold text-indigo-700 mb-6">Page « Statistiques »</h2>
+      <p class="mb-4">Statistiques personnelles sur l'activité de l'utilisateur :</p>
+
+        <div class="space-y-10 pl-4 border-l-4 border-indigo-300">
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Chiffres clés</h3>
+          <ul class="list-disc list-inside mb-6 space-y-2 ml-6">
+            <li>Total de QR Codes créés</li>
+            <li>Total cumulé de scans</li>
+            <li>Moyenne quotidienne des scans sur les 30 derniers jours</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Répartition des scans</h3>
+          <ul class="list-disc list-inside mb-6 space-y-2 ml-6">
+            <li><strong>Par jour :</strong> nombre de scans quotidien sur les 30 derniers jours</li>
+            <li><strong>Par mois :</strong> vue agrégée des scans sur les 6 derniers mois</li>
+            <li><strong>Par heure de la journée :</strong> analyse des pics d’activité horaire</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Analyse qualitative</h3>
+          <ul class="list-disc list-inside mb-6 space-y-2 ml-6">
+            <li>Top 5 des QR Codes les plus scannés </li>
+            <li>Répartition des QR Codes actifs vs inactifs</li>
+          </ul>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <img src="/media/img/admin_stats_by_day.png" alt="Stats par jour" class="rounded-lg shadow-lg max-h-48 w-full object-contain" />
+          <img src="/media/img/admin_stats_top5.png" alt="Top 5 QR Codes" class="rounded-lg shadow-lg max-h-48 w-full object-contain" />
+          <img src="/media/img/admin_stats_by_hour.png" alt="Stats par heure" class="rounded-lg shadow-lg max-h-48 w-full object-contain" />
+          <img src="/media/img/admin_stats_active_inactive.png" alt="QR Codes actifs vs inactifs" class="rounded-lg shadow-lg max-h-48 w-full object-contain" />
+        </div>
+
+      </div>
+    </section>
+
+  </section>
+</div>
+{% endblock %}

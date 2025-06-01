@@ -22,13 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-y$lvli2z!oka7eyo2n^+f(9=0=%$^j*+7$u0om=fc8rk%+*xnv'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
-FERNET_KEY = "IgdkwbjTDLPli9uYlpjvONArq0gc98r3uqmgh7mc618="
+FERNET_KEY = os.environ.get('DJANGO_FERNET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.149', 'localhost', '127.0.0.1']
+DOMAIN_IP = os.environ.get('DOMAIN_IP')
+DOMAIN_PROD = os.environ.get('DOMAIN_PROD')
+DOMAIN_NGROK = os.environ.get('DOMAIN_NGROK')
+ALLOWED_HOSTS = [DOMAIN_IP, 'localhost', '127.0.0.1', DOMAIN_PROD, DOMAIN_NGROK]
 
 
 # Application definition
@@ -45,10 +48,11 @@ INSTALLED_APPS = [
     'tracking',
     'analytics',
     'tailwind',
+    'theme',
+    'activityLog'
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Middleware pour CORS
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -84,7 +88,8 @@ WSGI_APPLICATION = 'dockerApp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        #'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': '/data/db.sqlite3',
     }
 }
 
@@ -136,8 +141,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 AUTH_USER_MODEL = 'accounts.CustomUser'
+TAILWIND_APP_NAME = 'theme'
+INTERNAL_IPS = [
+    "127.0.0.1"
+]
 
-# Pour développement local uniquement !
-CORS_ALLOW_ALL_ORIGINS = True  # à restreindre en prod
-
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']  # React dev server
+GEOIP_PATH = os.path.join(BASE_DIR, 'dockerApp/geoip')

@@ -1,4 +1,20 @@
-.env/
+# Ignorer les fichiers d’environnement dans src
+src/.env
+
+# Ignorer fichiers spécifiques
+src/dockerApp/geoip/GeoLite2-City.mmdb
+
+# Ignorer environnement virtuel Python local
 venv/
+
+# Ignorer dossiers node_modules
+node_modules/
+
+# Ignorer tous les fichiers sqlite
 *.sqlite3
-.node_modules/
+
+# Ignorer explicitement la base de données dans data
+data/db.sqlite3
+
+# Ignore les images des QRCodes
+src/media/qrcodes/

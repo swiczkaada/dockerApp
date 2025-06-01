@@ -1,39 +1,103 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Mes QR codes </h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <h2>Generer un qr code</h2>
-    <form method="POST">
-        {% csrf_token %}
-        <p>
-            <label for="title">Titre</label>
-            <input type="text" name="title" id="title" required>
-        </p>
-        <p>
-            <label for="target_url">URL de destination</label>
-            <input type="url" name="target_url" id="target_url" required>
-        </p>
-        <button type="submit">Générer le QR Code</button>
+  <h1 class="text-4xl font-bold text-gray-900 mb-8">Mes QR Codes</h1>
 
+  <!-- FORMULAIRE MODERNE -->
+  <div class="bg-white p-8 rounded-2xl shadow mb-10">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Générer un QR Code</h2>
+    <form method="POST" class="space-y-6">
+      {% csrf_token %}
+
+      <div class="relative">
+        <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Titre</label>
+        <div class="flex items-center border border-gray-300 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-indigo-500">
+          <span class="px-3 text-gray-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M12 4v16m8-8H4" />
+            </svg>
+          </span>
+          <input type="text" name="title" id="title"   maxlength="150" placeholder="Ex: Formulaire de contact"
+            class="w-full border-none focus:ring-0 px-3 py-2 rounded-r-xl placeholder-gray-400" required>
+        </div>
+      </div>
+
+      <div class="relative">
+        <label for="target_url" class="block text-sm font-medium text-gray-700 mb-1">URL de destination</label>
+        <div class="flex items-center border border-gray-300 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-indigo-500">
+          <span class="px-3 text-gray-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+              viewBox="0 0 24 24">
+              <path d="M12 4v16m8-8H4" />
+            </svg>
+          </span>
+          <input type="url" name="target_url" id="target_url" placeholder="https://..." maxlength="500"
+            class="w-full border-none focus:ring-0 px-3 py-2 rounded-r-xl placeholder-gray-400" required>
+        </div>
+      </div>
+
+      <button type="submit"
+        class="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition shadow">
+        Générer le QR Code
+      </button>
     </form>
+  </div>
 
-    {% if qrcodes %}
-        <h2>Vos QR Codes</h2>
-        <ul>
-            {% for qrcode in qrcodes %}
-                <li>
-                    <strong>{{ qrcode.title }}</strong> - <a href="{{ qrcode.target_url }}">{{ qrcode.target_url }}</a>
-                        <a href="{{ qrcode.get_absolute_url }}">Voir le qrcode</a>
-                        <a href="{%  url 'delete-qrcode' qrcode.uuid %}">Supprimer le QR Code</a>
-                        <p>Nombre de scans :
-                            {{ qrcode.scan_count }}
-                        </p>
+  <!-- TABLEAU DES QR CODES -->
+  {% if qrcodes %}
+  <div class="bg-white p-6 rounded-2xl shadow-md overflow-x-auto">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Vos QR Codes</h2>
+    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 font-medium text-gray-600">QR</th>
+          <th class="px-4 py-3 font-medium text-gray-600">Titre</th>
+          <th class="px-4 py-3 font-medium text-gray-600">URL</th>
+          <th class="px-4 py-3 font-medium text-gray-600 text-center">Scans</th>
+          <th class="px-4 py-3 font-medium text-gray-600 text-center">Statut</th>
+          <th class="px-4 py-3 font-medium text-gray-600 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for qrcode in qrcodes %}
+        <tr class="hover:bg-gray-50 transition h-20 align-middle">
+          <td class="px-4 py-3">
+            {% if qrcode.qr_image %}
+              <img src="{{ qrcode.qr_image.url }}" alt="QR" class="w-12 h-12 object-contain rounded-md shadow-sm">
+            {% else %}
+              <span class="text-gray-400 italic">N/A</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 font-medium text-gray-800">{{ qrcode.title }}</td>
+          <td class="px-4 py-3 text-blue-600 hover:underline break-words max-w-xs">
+            <a href="{{ qrcode.target_url }}" target="_blank">{{ qrcode.target_url|truncatechars:40 }}</a>
+          </td>
+          <td class="px-4 py-3 text-center">{{ qrcode.scan_count }}</td>
+          <td class="px-4 py-3 text-center">
+            {% if qrcode.is_active %}
+              <span class="inline-flex items-center px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Actif</span>
+            {% else %}
+              <span class="inline-flex items-center px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">Inactif</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-center space-x-2">
+            <a href="{{ qrcode.get_absolute_url }}"
+              class="inline-block bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">Voir</a>
+            <a href="{% url 'delete-qrcode' qrcode.uuid %}"
+              class="inline-block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm"
+              onclick="return confirm('Supprimer ce QR Code ?')">Supprimer</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-gray-600 mt-4">Aucun QR Code généré pour le moment.</p>
+  {% endif %}
 
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Aucun QR Code généré pour le moment.</p>
-    {% endif %}
+</div>
 {% endblock %}

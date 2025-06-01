@@ -1,53 +1,72 @@
 {% extends 'base.html' %}
-
-
+{% load static %}
 {% block content %}
-    <h2>{{qrcode.title}}</h2>
-    {% if qrcode.qr_image %}
-        <img src="{{ qrcode.qr_image.url }}" alt="QR Code for {{ qrcode.title }}" style="width: 200px; height: auto;">
-    {% endif %}
-    <a href="{%  url 'delete-qrcode' qrcode.uuid %}">Supprimer le QR Code</a>
-    <h2>Modifier le qr code </h2>
-    <form method="POST">
-        {% csrf_token %}
-        <p>
-            <label for="title">Titre</label>
-            <input type="text" name="title" id="title" value="{{ qrcode.title }}" required>
-        </p>
-        <p>
-            <label for="target_url">URL de destination</label>
-            <input type="url" name="target_url" id="target_url" value="{{ qrcode.target_url }}" required>
-        </p>
-        <button type="submit">Modifier le QR Code</button>
+
+  <h2 class="text-3xl font-bold text-blue-900 text-center mb-10 truncate max-w-[80%] mx-auto">{{ qrcode.title }}</h2>
+
+  <div class="flex flex-col md:flex-row gap-10 max-w-6xl mx-auto">
+    <!-- QR Code Block -->
+
+    <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center w-full md:w-1/3">
+      {% if request.user.is_superuser or request.user.is_staff %}
+        <div class="text-sm text-gray-600 italic mb-2 md:w-1/3">
+          Créé par : <span class="font-medium text-gray-800">{{ qrcode.user.username }}</span>
+        </div>
+      {% endif %}
+      {% if qrcode.qr_image %}
+        <img src="{{ qrcode.qr_image.url }}" alt="QR Code for {{ qrcode.title }}" class="w-64 h-auto mb-4 border border-gray-300 rounded-lg shadow-sm">
+      {% endif %}
+      <a href="{% url 'reload-qrcode-image' qrcode.uuid %}" class="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+        🔁 Recharger QR Code
+      </a>
+      <a href="{% url 'delete-qrcode' qrcode.uuid %}" class="mt-2 text-red-600 underline text-sm hover:text-red-800">
+        Supprimer le QR Code
+      </a>
+    </div>
+
+    <!-- Formulaire -->
+    <form method="POST" class="bg-white p-6 rounded-xl shadow-md w-full md:w-2/3 space-y-5 flex flex-col gap-5">
+      {% csrf_token %}
+      <div class="w-full">
+        <label for="title" class="block text-gray-700 font-semibold mb-1">Titre</label>
+        <input type="text" name="title" id="title" maxlength="150" value="{{ qrcode.title }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="w-full">
+        <label for="target_url" class="block text-gray-700 font-semibold mb-1">URL de destination</label>
+        <input type="url" name="target_url" id="target_url" maxlength="500" value="{{ qrcode.target_url }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="flex items-center gap-3">
+        <input type="checkbox" id="is_active" name="is_active" {% if qrcode.is_active %}checked{% endif %} class="w-5 h-5 text-blue-600">
+        <label for="is_active" class="text-gray-800 font-medium">QR Code actif</label>
+      </div>
+      <div class="flex justify-center">
+        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition w-fit">
+          💾 Modifier le QR Code
+        </button>
+      </div>
     </form>
-    <h2>Statistiques du QR Code</h2>
-    <h3>Scans sur les 7 derniers jours</h3>
-    <canvas id="scansChart" width="600" height="300"></canvas>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      const ctx = document.getElementById('scansChart').getContext('2d');
-      const labels = {{ labels|safe }};
-      const data = {{ data|safe }};
+  <!-- Statistiques -->
+  <div class="mt-14 max-w-6xl mx-auto space-y-10">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <h3 class="text-xl font-semibold mb-4 text-blue-800 text-center">Scans sur les 7 derniers jours</h3>
+      <canvas id="scansChart" class="w-full h-72"></canvas>
+    </div>
 
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Nombre de scans',
-            data: data,
-            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    </script>
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <h3 class="text-xl font-semibold mb-4 text-blue-800 text-center">Heures où ce QR Code est le plus scanné</h3>
+      <canvas id="hourChart" class="w-full h-72"></canvas>
+    </div>
+  </div>
+
+ <!-- Données JSON encodées par Django -->
+{{ chart_data|json_script:"chart-data" }}
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static '/QRCode/js/chart.js' %}"></script>
 
 {% endblock %}

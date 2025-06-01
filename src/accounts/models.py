@@ -46,6 +46,26 @@ class UserManager(BaseUserManager):
 
         return self.create_user(email, username, password, **extra_fields)
 
+    def create_admin(self, email, username, password=None, **extra_fields):
+        """
+        Create and return an admin user with an email, username and password.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('permission', 2)
+
+        return self.create_user(email, username, password, **extra_fields)
+
+    def delete_user(self, user):
+        """
+        Supprime un utilisateur sauf s'il est super admin ou s'il n'est pas une instance du modèle CustomUser.
+        """
+        if not isinstance(user, self.model):
+            raise ValueError("L'objet fourni n'est pas un utilisateur valide.")
+        if user.is_superuser:
+            raise ValueError("Impossible de supprimer un superutilisateur.")
+
+        user.delete()
+
 class CustomUser(AbstractUser, PermissionsMixin):
     PERMISSION_CHOICES = (
         (0, 'Aucun accès'),

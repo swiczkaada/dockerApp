@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12">
+  <h1 class="text-4xl font-bold text-indigo-800 mb-12">Documentation complète de l'application</h1>
+
+  {% if user.is_admin or user.is_super_admin %}
+  <div class="mb-6">
+    <a href="{% url 'doc_user' %}" class="px-4 py-2 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition duration-300 shadow-md inline-block">
+      Basculer vers la vue Utilisateur
+    </a>
+  </div>
+  <!-- Documentation Admin -->
+  <section class="space-y-12">
+
+    <section>
+      <h2 class="text-3xl font-semibold text-indigo-700 mb-6">Page d'accueil Administrateur</h2>
+      <p class="mb-4">Contrairement à l'accueil utilisateur classique, cette page affiche des données globales ainsi que des outils de gestion avancée :</p>
+      <ul class="list-disc list-inside space-y-2 mb-6">
+        <li><strong>Statistiques globales :</strong> QR Codes créés aujourd'hui, scans effectués aujourd'hui.</li>
+        <li><strong>Acces è la Fiche détail d’un QR Code via l'outil de Recherche de QR Codes :</strong> accessible à l’admin et au propriétaire du QR Code.</li>
+      </ul>
+
+      <div class="space-y-10 pl-4 border-l-4 border-indigo-300">
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Recherche avancée de QR Codes</h3>
+          <p class="mb-4">Outil de recherche de QRCode par son titre, uuid ou son url.</p>
+          <img src="/media/img/admin_home_stats.png" alt="Page d'accueil Admin - Statistiques globales" class="rounded-lg shadow-lg max-h-[520px] max-w-sm w-auto h-auto object-contain" />
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">QR Codes créés récemment</h3>
+          <p class="mb-4">Liste des derniers QR Codes créés sur la plateforme pour un suivi rapide.</p>
+          <img src="/media/img/admin_recent_qrcodes.png" alt="Liste QR Codes récents" class="w-full max-w-4xl rounded-lg shadow-lg mb-6" style="max-height:280px; object-fit:contain;" />
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Historique des actions administrateurs</h3>
+          <p class="mb-4">Journal détaillé des opérations effectuées par les admins (suppression, activation, désactivation de comptes), avec informations sur l’auteur de l’action et la date.</p>
+          <img src="/media/img/admin_actions_log.png" alt="Historique actions Admin" class="w-full max-w-4xl rounded-lg shadow-lg mb-6" style="max-height:280px; object-fit:contain;" />
+        </section>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-3xl font-semibold text-indigo-700 mb-6">Page « Mon compte » Administrateur</h2>
+      <p>En plus des sections classiques utilisateur, cette page offre :</p>
+
+      <div class="space-y-10 pl-4 border-l-4 border-indigo-300">
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Gestion des utilisateurs</h3>
+          <p class="mb-4"><strong>Recherche par username ou email, avec possibilité d'activer/désactiver les comptes</strong>(le compte désactivé ne peut plus se connecter, mais ses QR Codes restent actifs)</p>
+          <ul class="list-disc list-inside mb-6 space-y-2 ml-6">
+            <li>Bouton pour supprimer définitivement un utilisateur.</li>
+            <li>Accès à la fiche détaillée d’un utilisateur en cliquant sur son username ou email.</li>
+          </ul>
+          <img src="/media/img/admin_gestion_users.png" alt="Liste QR Codes récents" class="w-full max-w-4xl rounded-lg shadow-lg mb-6" style="max-height:280px; object-fit:contain;" />
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Fiche utilisateur</h3>
+          <p class="mb-4">La fiche utilisateur permet à l'administrateur de consulter en détail les informations liées à un utilisateur. Elle est accessible depuis la section de gestion des utilisateurs <strong>en cliquant sur le nom ou l'email.</strong> </p>
+          <p class="mb-4">Elle regroupe :</p>
+          <ul class="list-disc list-inside mb-6 space-y-2 ml-6">
+            <li>Résumé : dernier QR Code créé, nombre total de scans, nombre total de QR Codes</li>
+            <li>Informations : nom, email, date d’inscription, rôle</li>
+            <li>Liste des QR Codes créés par l'utilisateur</li>
+            <li>Activité récente de l'utilisateur</li>
+          </ul>
+          <img src="/media/img/admin_user_profile.png" alt="Fiche utilisateur détaillée" class="w-full max-w-4xl rounded-lg shadow-lg mb-6" style="max-height:360px; object-fit:contain;" />
+       </section>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-3xl font-semibold text-indigo-700 mb-6">Page « Statistiques globales »</h2>
+      <p class="mb-4">
+        Cette page dédiée aux administrateurs fournit une vue d’ensemble analytique de l’activité globale sur la plateforme. Elle permet d’avoir une vision synthétique des performances et comportements d’usage des QR Codes.
+      </p>
+
+      <div class="space-y-10 pl-4 border-l-4 border-indigo-300">
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Chiffres clés</h3>
+          <ul class="list-disc list-inside mb-6 space-y-2 ml-6">
+            <li>Total de QR Codes créés (tous utilisateurs confondus)</li>
+            <li>Total cumulé de scans</li>
+            <li>Moyenne quotidienne des scans sur les 30 derniers jours</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Répartition des scans</h3>
+          <ul class="list-disc list-inside mb-6 space-y-2 ml-6">
+            <li><strong>Par jour :</strong> nombre de scans quotidien sur les 30 derniers jours</li>
+            <li><strong>Par mois :</strong> vue agrégée des scans sur les 6 derniers mois</li>
+            <li><strong>Par heure de la journée :</strong> analyse des pics d’activité horaire</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-semibold text-indigo-600 mb-4">Analyse qualitative</h3>
+          <ul class="list-disc list-inside mb-6 space-y-2 ml-6">
+            <li>Top 5 des QR Codes les plus scannés (tous utilisateurs confondus)</li>
+            <li>Répartition des QR Codes actifs vs inactifs</li>
+          </ul>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <img src="/media/img/admin_stats_by_day.png" alt="Stats par jour" class="rounded-lg shadow-lg max-h-48 w-full object-contain" />
+          <img src="/media/img/admin_stats_top5.png" alt="Top 5 QR Codes" class="rounded-lg shadow-lg max-h-48 w-full object-contain" />
+          <img src="/media/img/admin_stats_by_hour.png" alt="Stats par heure" class="rounded-lg shadow-lg max-h-48 w-full object-contain" />
+          <img src="/media/img/admin_stats_active_inactive.png" alt="QR Codes actifs vs inactifs" class="rounded-lg shadow-lg max-h-48 w-full object-contain" />
+        </div>
+
+      </div>
+    </section>
+  </section>
+
+  {% endif %}
+</div>
+{% endblock %}

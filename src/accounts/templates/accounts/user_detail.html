@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-10">
+
+  <!-- COLONNE GAUCHE : Dernier QR Code + stats -->
+  <div class="w-1/3 bg-white p-6 rounded-2xl shadow flex flex-col">
+    <h2 class="text-2xl font-bold mb-6 text-gray-900">Dernier QR Code créé</h2>
+    {% if last_qrcode %}
+      <div class="flex-1 flex flex-col items-center justify-center">
+        <img src="{{ last_qrcode.qr_image.url }}" alt="Dernier QR Code" class="w-48 h-48 mb-4 rounded-md shadow-md border border-gray-300 object-contain" />
+        <p class="font-semibold text-gray-800 mb-2 truncate max-w-[18vw]">{{ last_qrcode.title }}</p>
+        <a href="{{ last_qrcode.get_absolute_url }}" class="text-blue-600 hover:underline text-sm mb-4">Voir le QR Code</a>
+      </div>
+    {% else %}
+      <p class="text-gray-500 italic flex-1 flex items-center justify-center">Aucun QR Code créé</p>
+    {% endif %}
+
+    <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold mb-1 text-gray-700">Nombre total de scans</h3>
+      <p class="text-3xl font-bold text-indigo-600">{{ total_scans }}</p>
+      <h3 class="text-lg font-semibold mt-4 text-gray-700">Nombre de QR Codes</h3>
+      <p class="text-3xl font-bold text-indigo-600">{{ total_qrcodes }}</p>
+    </div>
+  </div>
+
+  <!-- COLONNE DROITE : Infos user + QR codes + activité -->
+  <div class="flex-1 space-y-8">
+
+    <!-- Fiche info utilisateur -->
+    <section class="bg-white p-6 rounded-2xl shadow">
+      <h2 class="text-3xl font-bold text-gray-900 mb-6">Fiche utilisateur</h2>
+      <div class="space-y-3 text-gray-700">
+        <p><span class="font-semibold">Nom :</span> {{ user.get_full_name }}</p>
+        <p><span class="font-semibold">Email :</span> {{ user.email }}</p>
+        <p><span class="font-semibold">Date d'inscription :</span> {{ user.date_joined|date:"d/m/Y" }}</p>
+        <p><span class="font-semibold">Rôle :</span> {% if user.is_superuser %}Super Admin{% elif user.is_staff %}Admin{% else %}Utilisateur{% endif %}</p>
+      </div>
+    </section>
+
+    <!-- Liste des QR Codes de l'utilisateur -->
+    <section class="bg-white p-6 rounded-2xl shadow">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6">QR Codes créés</h2>
+      {% if qrcodes %}
+      <div class="max-h-96 overflow-y-auto divide-y divide-gray-200 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-100">
+        <table class="min-w-full text-sm text-left">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 font-medium text-gray-600">QR</th>
+              <th class="px-4 py-3 font-medium text-gray-600">Titre</th>
+              <th class="px-4 py-3 font-medium text-gray-600">URL</th>
+              <th class="px-4 py-3 font-medium text-gray-600 text-center">Scans</th>
+              <th class="px-4 py-3 font-medium text-gray-600 text-center">Statut</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for qrcode in qrcodes %}
+            <tr class="hover:bg-gray-50 transition h-16 align-middle">
+              <td class="px-4 py-3">
+                {% if qrcode.qr_image %}
+                  <img src="{{ qrcode.qr_image.url }}" alt="QR" class="w-12 h-12 object-contain rounded-md shadow-sm">
+                {% else %}
+                  <span class="text-gray-400 italic">N/A</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 font-medium text-gray-800 max-w-[300px] truncate">{{ qrcode.title }}</td>
+              <td class="px-4 py-3 text-blue-600 hover:underline break-words max-w-xs">
+                <a href="{{ qrcode.target_url }}" target="_blank">{{ qrcode.target_url|truncatechars:40 }}</a>
+              </td>
+              <td class="px-4 py-3 text-center">{{ qrcode.scan_count }}</td>
+              <td class="px-4 py-3 text-center">
+                {% if qrcode.is_active %}
+                  <span class="inline-flex items-center px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Actif</span>
+                {% else %}
+                  <span class="inline-flex items-center px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">Inactif</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="text-gray-600">Cet utilisateur n'a créé aucun QR Code.</p>
+      {% endif %}
+    </section>
+
+    <!-- Activité récente -->
+
+    <section class="bg-white p-6 rounded-2xl shadow">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4">Activité récente</h2>
+      {% if logs %}
+        <div class="max-h-60 overflow-y-auto divide-y divide-gray-200 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-100">
+          {% for log in logs %}
+            <div class="px-4 py-3 flex items-start space-x-4 hover:bg-gray-50 transition">
+              <div class="flex-shrink-0 mt-1">
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="flex-1 text-gray-700">
+                <p class="text-sm font-medium">{{ log.description }}</p>
+                <p class="text-xs text-gray-500">{{ log.timestamp|date:"d M Y H:i" }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-600 italic">Aucune activité récente.</p>
+      {% endif %}
+    </section>
+
+  </div>
+</div>
+{% endblock %}
