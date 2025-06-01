@@ -18,3 +18,14 @@ data/db.sqlite3
 
 # Ignore les images des QRCodes
 src/media/qrcodes/
+
+# Ignorer la configuration de l'IDEA
+.idea/
+
+# Ignorer les fichiers et dossiers Python compilés
+__pycache__/
+*.py[cod]
+
+
+# Ignore les fichiers CSS générés automatiquement par Tailwind
+theme/static/css/dist/

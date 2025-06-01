@@ -27,7 +27,7 @@
                 {% endif %}
                 <a href="{% url 'profile' %}" class="hover:text-blue-300 transition">Mon compte ({{ user.username }})</a>
                 <a href="{% url 'qr_code' %}" class="hover:text-blue-300 transition">Mes QR Codes</a>
-                <a href="{% url 'global_stats' %}" class="hover:text-blue-300 transition">Statistiques globales</a>
+                <a href="{% url 'global_stats' %}" class="hover:text-blue-300 transition">{% if user.is_super_admin or user.is_admin %} Statistiques globales {% else %} Statistiques {% endif %}</a>
                 <a href="{% url 'logout' %}" class="bg-red-600 hover:bg-red-700 px-4 py-1 rounded transition inline-block">
                     Se déconnecter
                 </a>
